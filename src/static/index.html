@@ -592,6 +592,7 @@ function ago(ts){ const m = Math.round((Date.now()-ts)/60000); if(m<1) return m<
 // cooldowns, and each route is paced so a burst of sections never floods it. Inside an APK with
 // CapacitorHttp, or with your own relay set in Connection settings, the first route simply works.
 const ROUTES = [
+  { id:"own", make: u => "/api/rss?u=" + encodeURIComponent(u), timeout:12000 },
   { id:"custom",     make: u => (store.get("news:relay") || "") + encodeURIComponent(u), timeout:8000, when: () => !!store.get("news:relay") },
   { id:"direct",     make: u => u, timeout:2500 },
   { id:"script",     jsonp:true, make: (u, cb) => "https://api.allorigins.win/get?url=" + encodeURIComponent(u) + "&callback=" + cb, timeout:7000 },
@@ -1137,7 +1138,7 @@ function openAbout(){
     + '<div class="drawer-b"><h2 id="d-title">About the data</h2><p>News comes from Google News searches restricted to the chosen day, then filtered to the exact IST day (00:00\u201323:59). Stories are grouped when several outlets report the same event.</p>'
     + '<p>The app shows publishers\u2019 own headlines, times and links. It never writes summaries or claims a story is \u201cverified\u201d; coverage counts describe how many outlets reported it.</p>'
     + '<p>Coverage is what the feeds return for that day. It is broad, not a guarantee of every story published. Very old dates may return fewer stories.</p>'
-    + '<p class="kpi-note">Days you load are saved on this device (the 12 most recent), so revisiting them is instant.</p></div></aside>';
+    + '<p class="kpi-note">Days you load are saved on this device (the ' + PACKS_MAX + ' most recent), so revisiting them is instant.</p></div></aside>';
   $("dclose").focus();
 }
 
