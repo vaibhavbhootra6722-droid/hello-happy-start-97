@@ -1,0 +1,1484 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily News Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0A0C16">
+<style>
+:root, [data-theme=dark]{
+  --bg:#0A0C16; --panel:#111426; --panel2:#16192D; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+  --ink:#F5F5F7; --soft:#A2A7BA; --faint:#7A8095;
+  --accent:#8B7FF5; --accent-ink:#0A0C16; --accent-soft:rgba(139,127,245,.16);
+  --green:#4CC38A; --amber:#E7B04B; --red:#F07474;
+  --shadow:0 12px 40px rgba(0,0,0,.45);
+}
+[data-theme=light]{
+  --bg:#F5F5F8; --panel:#FFFFFF; --panel2:#F0F0F5; --line:rgba(20,22,43,.09); --line2:rgba(20,22,43,.16);
+  --ink:#15172B; --soft:#555B70; --faint:#6E7489;
+  --accent:#5446D0; --accent-ink:#FFFFFF; --accent-soft:rgba(84,70,208,.10);
+  --green:#1C8A57; --amber:#A86A00; --red:#C43D3D;
+  --shadow:0 12px 36px rgba(20,22,43,.14);
+}
+:root{
+  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r:12px; --side:236px;
+  color-scheme:dark;
+}
+[data-theme=light]{ color-scheme:light }
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.i{width:18px;height:18px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Sidebar ---------- */
+.side{position:fixed;inset:0 auto 0 0;width:var(--side);background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:40;
+  padding:calc(14px + env(safe-area-inset-top,0px)) 12px calc(14px + env(safe-area-inset-bottom,0px));overflow-y:auto;scrollbar-width:thin}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+.logo{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink);flex:0 0 auto}
+.logo svg{width:16px;height:16px}
+.brand b{font-size:.78rem;letter-spacing:.08em;font-weight:600}
+.nav-h{font-size:.7rem;letter-spacing:.08em;color:var(--faint);margin:14px 10px 6px;font-weight:600}
+.nav a,.nav button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:8px;color:var(--soft);text-decoration:none;font-size:.9rem;text-align:left;min-height:38px}
+.nav a:hover,.nav button:hover{background:var(--panel2);color:var(--ink)}
+.nav [aria-current=page]{background:var(--accent-soft);color:var(--ink);font-weight:500}
+.nav .n{margin-left:auto;font-size:.75rem;color:var(--faint);font-variant-numeric:tabular-nums}
+.nav .dot{width:6px;height:6px;border-radius:50%;background:var(--line2);margin:0 6px 0 6px;flex:0 0 auto}
+.nav [aria-current=page] .dot{background:var(--accent)}
+.more-topics{display:none} .more-topics.open{display:block}
+.side select{width:100%;min-height:40px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);padding:0 10px;margin:2px 0 0}
+.side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+body.collapsed{--side:68px}
+body.collapsed .side .lbl, body.collapsed .side .nav-h, body.collapsed .side .n, body.collapsed .side select, body.collapsed .brand b,
+body.collapsed .side .topics, body.collapsed .side .local{display:none}
+body.collapsed .nav a, body.collapsed .nav button{justify-content:center}
+
+/* ---------- Main + header ---------- */
+.main{margin-left:var(--side);min-height:100vh}
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) 24px 10px;display:flex;align-items:center;gap:12px}
+.top .menu{display:none}
+.datectl{display:flex;align-items:center;gap:6px;margin:0 auto}
+.iconbtn{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--soft)}
+.iconbtn:hover{background:var(--panel2);color:var(--ink)}
+.iconbtn:disabled{opacity:.3;cursor:not-allowed}
+.datebtn{padding:6px 14px;border-radius:10px;text-align:center;min-width:250px}
+.datebtn:hover{background:var(--panel2)}
+.datebtn .d{display:block;font-family:var(--serif);font-weight:650;font-size:1.22rem;line-height:1.2}
+.datebtn .s{display:block;font-size:.76rem;color:var(--soft);margin-top:1px}
+.live{color:var(--green)}
+.datebtn .short{display:none}
+@media(max-width:767px){ .datebtn .full{display:none} .datebtn .short{display:inline} }
+.acts{display:flex;align-items:center;gap:4px}
+.todaybtn{border:1px solid var(--line2);border-radius:999px;padding:5px 14px;font-size:.84rem;font-weight:500;min-height:34px}
+.todaybtn[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+kbd{font-family:var(--sans);font-size:.7rem;border:1px solid var(--line2);border-radius:4px;padding:0 5px;color:var(--faint);margin-left:4px}
+
+/* Date popover */
+.pop{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:330px;max-width:calc(100vw - 24px);background:var(--panel);border:1px solid var(--line2);border-radius:14px;box-shadow:var(--shadow);padding:14px;z-index:50}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{border:1px solid var(--line2);border-radius:999px;padding:5px 12px;font-size:.84rem;color:var(--soft);min-height:34px}
+.chip:hover{color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:500}
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.cal-h b{font-weight:600;font-size:.95rem}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal .wd{font-size:.7rem;color:var(--faint);padding:4px 0}
+.cal button{height:38px;border-radius:8px;font-size:.88rem;position:relative;font-variant-numeric:tabular-nums}
+.cal button:hover:not(:disabled){background:var(--panel2)}
+.cal button:disabled{color:var(--faint);opacity:.4;cursor:not-allowed}
+.cal button.sel{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.cal button.today:not(.sel){box-shadow:inset 0 0 0 1px var(--line2)}
+.cal button.has::after{content:"";position:absolute;bottom:5px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--accent)}
+.cal button.sel.has::after{background:var(--accent-ink)}
+.cal-note{font-size:.74rem;color:var(--faint);margin:8px 0 0}
+
+/* ---------- Content ---------- */
+.content{max-width:1080px;margin:0 auto;padding:22px 24px 80px}
+.page-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 14px}
+.page-h h1{font-family:var(--serif);font-weight:650;font-size:1.7rem;margin:0;line-height:1.15}
+.page-h .sub{color:var(--soft);font-size:.9rem}
+.sec{margin:0 0 28px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 10px}
+.sec-h h2{font-size:.78rem;letter-spacing:.08em;font-weight:600;color:var(--soft);margin:0;text-transform:uppercase}
+.sec-h .link{font-size:.84rem;color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+
+/* Landing */
+.landing{max-width:520px;margin:9vh auto 0;text-align:center}
+.landing .kick{font-size:.78rem;letter-spacing:.14em;color:var(--soft);font-weight:600}
+.landing h1{font-family:var(--serif);font-weight:650;font-size:clamp(2rem,6vw,2.8rem);line-height:1.1;margin:8px 0 10px}
+.landing p{color:var(--soft);margin:0 0 22px}
+.btn{min-height:44px;padding:0 20px;border-radius:10px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.pri{background:var(--accent);color:var(--accent-ink)}
+.btn.sec2{border:1px solid var(--line2)}
+.landing .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.landing .prev{margin-top:30px}
+.landing .prev h2{font-size:.78rem;letter-spacing:.08em;color:var(--faint);font-weight:600;margin:0 0 8px}
+
+/* Progress */
+.build{padding:16px 18px;margin:0 0 22px}
+.build h2{font-size:.78rem;letter-spacing:.1em;font-weight:600;margin:0 0 10px;color:var(--soft)}
+.build ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 16px;font-size:.86rem}
+.build li{display:flex;align-items:center;gap:8px;color:var(--soft)}
+.build li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--line2)}
+.build li[data-s=ok]{color:var(--ink)} .build li[data-s=ok]::before{background:var(--green)}
+.build li[data-s=wait]::before{animation:pulse 1s infinite alternate}
+.build li[data-s=fail]::before{background:var(--red)}
+.build .count{margin:12px 0 0;font-size:.9rem}
+@keyframes pulse{from{opacity:.35}to{opacity:1}}
+.warn{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;margin:0 0 20px;border-left:3px solid var(--amber)}
+.warn p{margin:0;flex:1 1 220px;font-size:.9rem}
+
+/* Briefing */
+.brief{padding:20px 22px}
+.brief .when{font-size:.78rem;letter-spacing:.1em;color:var(--accent);font-weight:600;text-transform:uppercase}
+.brief h2{font-family:var(--serif);font-weight:650;font-size:1.45rem;margin:4px 0 12px;line-height:1.2}
+.brief ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.brief li button{display:grid;grid-template-columns:110px 1fr;gap:12px;width:100%;text-align:left;padding:8px 8px;border-radius:8px;align-items:baseline}
+.brief li button:hover{background:var(--panel2)}
+.brief .area{font-size:.76rem;letter-spacing:.06em;color:var(--soft);font-weight:600;text-transform:uppercase}
+.brief .t{font-family:var(--serif);font-size:1.04rem;line-height:1.35}
+.brief .note{font-size:.76rem;color:var(--faint);margin:10px 8px 0}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.kpi{padding:12px 14px}
+.kpi b{display:block;font-size:1.45rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi span{font-size:.8rem;color:var(--soft)}
+.kpi-note{font-size:.8rem;color:var(--faint);margin:8px 2px 0}
+
+/* Top stories */
+.tops{display:grid;grid-template-columns:1.35fr 1fr;gap:0}
+.tops .lead{padding:20px 22px;border-right:1px solid var(--line);text-align:left;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%}
+.tops .lead .k{font-size:.72rem;letter-spacing:.1em;color:var(--accent);font-weight:600}
+.tops .lead h3{font-family:var(--serif);font-weight:650;font-size:1.55rem;line-height:1.2;margin:8px 0 10px}
+.tops .rest{display:flex;flex-direction:column}
+.tops .rest button{text-align:left;padding:14px 18px;border-bottom:1px solid var(--line);display:block;width:100%}
+.tops .rest button:last-child{border-bottom:0}
+.tops .rest h4{font-family:var(--serif);font-weight:500;font-size:1.02rem;line-height:1.3;margin:0 0 4px}
+.tops button:hover h3,.tops button:hover h4{text-decoration:underline;text-underline-offset:3px}
+.meta{font-size:.8rem;color:var(--soft);display:flex;flex-wrap:wrap;gap:2px 8px;align-items:center}
+.meta .src{color:var(--ink);font-weight:500}
+.cov{display:inline-flex;align-items:center;gap:5px}
+.cov i{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+.c1{color:var(--faint)} .c2{color:var(--soft)} .c5{color:var(--green)} .c10{color:var(--accent)}
+
+/* Topics overview */
+.topics-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.topic{padding:14px 16px;display:flex;flex-direction:column;min-width:0}
+.topic .th{display:flex;align-items:baseline;justify-content:space-between;gap:8px;width:100%;text-align:left}
+.topic .th b{font-size:.78rem;letter-spacing:.08em;font-weight:600;text-transform:uppercase}
+.topic .th span{font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums}
+.topic ul{list-style:none;margin:8px 0 6px;padding:0;flex:1}
+.topic li button{display:block;width:100%;text-align:left;font-family:var(--serif);font-size:.95rem;line-height:1.3;padding:5px 0;border-top:1px solid var(--line)}
+.topic li:first-child button{border-top:0}
+.topic li button:hover{color:var(--accent)}
+.topic .all{font-size:.8rem;color:var(--accent);text-align:left;margin-top:auto;padding-top:4px;min-height:28px}
+.topic-more{margin-top:10px}
+
+/* What happened */
+.wh{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.wh .card{padding:14px 16px}
+.wh h3{font-size:.8rem;font-weight:600;margin:0 0 6px;color:var(--soft)}
+.wh ul{list-style:none;margin:0;padding:0}
+.wh li button{display:block;text-align:left;width:100%;font-family:var(--serif);font-size:.95rem;line-height:1.3;padding:6px 0;border-top:1px solid var(--line)}
+.wh li:first-child button{border-top:0}
+.wh li button:hover{color:var(--accent)}
+.wh small{display:block;font-family:var(--sans);font-size:.75rem;color:var(--faint);margin-top:2px}
+
+/* Feed rows */
+.catbar{position:sticky;top:61px;z-index:20;background:var(--bg);padding:8px 0;margin:0 0 6px;border-bottom:1px solid var(--line);display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.catbar::-webkit-scrollbar{display:none}
+.catbar .chip{flex:0 0 auto}
+.catbar .chip span{opacity:.7;margin-left:4px;font-size:.76rem}
+.toolrow{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:10px 0 4px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.seg button{padding:0 12px;min-height:34px;font-size:.84rem;color:var(--soft)}
+.seg button[aria-pressed=true]{background:var(--panel2);color:var(--ink);font-weight:500}
+.feed{list-style:none;margin:0;padding:0}
+.srow{display:grid;grid-template-columns:78px 1fr 20px;gap:14px;align-items:start;width:100%;text-align:left;padding:14px 4px;border-bottom:1px solid var(--line)}
+.srow:hover{background:var(--panel)}
+.srow .tm{font-size:.8rem;color:var(--soft);font-variant-numeric:tabular-nums;padding-top:3px}
+.srow .tm em{display:block;font-style:normal;font-size:.68rem;letter-spacing:.07em;color:var(--accent);font-weight:600;text-transform:uppercase;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srow .hl{display:block;font-family:var(--serif);font-weight:500;font-size:1.08rem;line-height:1.32;margin:0 0 5px;overflow-wrap:anywhere}
+.srow .chev{color:var(--faint);padding-top:4px}
+.showmore{display:block;margin:16px auto 0}
+.empty{text-align:center;padding:40px 10px;color:var(--soft)}
+.empty b{display:block;font-family:var(--serif);font-size:1.25rem;font-weight:500;color:var(--ink);margin-bottom:6px}
+
+/* Timeline */
+.tl{position:relative;margin-left:8px;padding-left:22px;border-left:1px solid var(--line2)}
+.tl h3{font-size:.8rem;letter-spacing:.08em;color:var(--accent);font-weight:600;margin:22px 0 4px;position:relative}
+.tl h3::before{content:"";position:absolute;left:-27px;top:3px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.tl h3:first-child{margin-top:0}
+.tl .srow{grid-template-columns:62px 1fr 20px}
+
+/* Drawer */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:100vw;background:var(--panel);border-left:1px solid var(--line2);z-index:61;
+  display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.drawer-h{display:flex;justify-content:space-between;align-items:center;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 8px 20px}
+.drawer-b{overflow-y:auto;padding:0 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.drawer h2{font-family:var(--serif);font-weight:650;font-size:1.4rem;line-height:1.25;margin:4px 0 14px}
+.facts{display:grid;grid-template-columns:100px 1fr;gap:6px 12px;margin:0 0 16px;font-size:.88rem}
+.facts dt{color:var(--soft)} .facts dd{margin:0}
+.dact{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.dact .btn{min-height:40px;padding:0 14px;font-size:.88rem}
+.drawer h3{font-size:.76rem;letter-spacing:.08em;color:var(--soft);font-weight:600;margin:18px 0 6px;text-transform:uppercase}
+.covlist{list-style:none;margin:0;padding:0}
+.covlist li{padding:9px 0;border-top:1px solid var(--line);font-size:.88rem}
+.covlist a{font-weight:500}
+.covlist .tt{display:block;color:var(--soft);font-family:var(--serif);font-size:.95rem;margin-top:2px}
+.wire{font-size:.8rem;color:var(--amber);margin:4px 0 0}
+@media(prefers-reduced-motion:no-preference){
+  .drawer{animation:slideR .22s ease} @keyframes slideR{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+  .pop,.cmd{animation:fade .15s ease} @keyframes fade{from{opacity:0}to{opacity:1}}
+}
+
+/* Command search */
+.cmdwrap{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:flex-start;padding:10vh 12px 12px}
+.cmd{width:620px;max-width:100%;background:var(--panel);border:1px solid var(--line2);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;max-height:76vh}
+.cmd .in{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.cmd input{flex:1;background:none;border:0;outline:0;font-size:1.05rem;min-height:36px}
+.cmd .res{overflow-y:auto;padding:6px}
+.cmd .res button{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:8px}
+.cmd .res button:hover,.cmd .res button.on{background:var(--panel2)}
+.cmd .res b{display:block;font-family:var(--serif);font-weight:500;font-size:1rem;line-height:1.3}
+.cmd .hint{padding:14px 16px;color:var(--soft);font-size:.88rem}
+.cmd .hint .chip{margin:6px 6px 0 0}
+
+
+/* News activity */
+.act{padding:10px 14px 8px;margin-top:10px}
+.act-h,.act-x{display:flex;justify-content:space-between;font-size:.76rem;color:var(--soft)}
+.bars{display:flex;align-items:flex-end;gap:2px;height:44px;margin:6px 0 4px}
+.bars i{flex:1;background:var(--accent);border-radius:2px 2px 0 0;opacity:.85;min-height:2px}
+.bars i.z{background:var(--line2);opacity:1}
+.act-x span{font-size:.68rem;color:var(--faint)}
+/* Watchlist */
+.wls{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:10px}
+.wl{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+.wl-h{display:flex;align-items:center;gap:8px}
+.wl-h b{font-size:.9rem} .wl-h .kpi-note{flex:1}
+.wl ul{list-style:none;margin:4px 0 0;padding:0}
+.wl li button{display:block;width:100%;text-align:left;font-family:var(--serif);font-size:.93rem;line-height:1.3;padding:6px 0;border-top:1px solid var(--line)}
+.wl li button:hover{color:var(--accent)}
+.wl small{display:block;font-family:var(--sans);font-size:.74rem;color:var(--faint);margin-top:2px}
+.wl .link{font-size:.8rem;color:var(--accent);margin-top:4px;min-height:28px}
+.wl-add{display:flex;gap:8px;max-width:420px}
+.wl-add input{flex:1;min-width:0;min-height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--panel);padding:0 12px}
+/* Filters */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 0}
+.filters select{min-height:36px;border-radius:8px;border:1px solid var(--line2);background:var(--panel);padding:0 8px;max-width:100%;font-size:.86rem}
+/* Update pill: fixed, so nothing on the page moves */
+.pill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:45;display:flex;align-items:center;gap:10px;
+  background:var(--ink);color:var(--bg);border-radius:999px;padding:6px 8px 6px 16px;box-shadow:var(--shadow);font-size:.88rem;font-weight:500;white-space:nowrap}
+.pill button{color:var(--bg)} .pill #apply-upd{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:6px 12px;font-weight:600}
+@media(max-width:767px){ .pill{bottom:calc(72px + env(safe-area-inset-bottom,0px))} }
+/* Connection settings */
+.steps{padding-left:20px;font-size:.9rem} .steps li{margin:4px 0}
+.relayrow{display:flex;gap:8px;flex-wrap:wrap} .relayrow input{flex:1 1 200px;min-height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);padding:0 10px}
+.code{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:.72rem;overflow-x:auto;white-space:pre;margin:10px 0 8px;max-width:100%}
+code{font-size:.85em;background:var(--panel2);padding:1px 4px;border-radius:4px}
+/* Bottom nav (mobile) */
+.bnav{display:none}
+.foot{font-size:.78rem;color:var(--faint);margin-top:34px;max-width:720px}
+
+/* ---------- Responsive ---------- */
+@media(max-width:1439px){ .topics-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media(max-width:1023px){
+  .side{transform:translateX(-100%);transition:transform .2s ease;width:280px;box-shadow:var(--shadow)}
+  body.navopen .side{transform:none}
+  body.collapsed{--side:236px}
+  .main{margin-left:0}
+  .top .menu{display:grid}
+  .collapse-btn{display:none!important}
+  .topics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpis .kpi:nth-child(n+4){display:none}
+}
+@media(max-width:767px){
+  html,body{font-size:15px}
+  .top{padding:calc(8px + env(safe-area-inset-top,0px)) 8px 8px;gap:2px}
+  .datebtn{min-width:0;padding:4px 6px}
+  .datebtn .d{font-size:1.04rem}
+  .acts .todaybtn, .acts .hide-m{display:none}
+  .content{padding:16px 14px calc(90px + env(safe-area-inset-bottom,0px))}
+  .brief{padding:16px}
+  .brief li button{grid-template-columns:1fr;gap:1px}
+  .tops{grid-template-columns:1fr}
+  .tops .lead{border-right:0;border-bottom:1px solid var(--line);padding:16px}
+  .tops .lead h3{font-size:1.32rem}
+  .topics-grid{grid-template-columns:1fr}
+  .wh{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .kpi{padding:10px 12px} .kpi b{font-size:1.2rem}
+  .catbar{top:57px}
+  .srow{grid-template-columns:1fr 16px;gap:8px}
+  .srow .tm{display:flex;gap:8px;align-items:baseline;grid-column:1/-1;padding:0}
+  .srow .tm em{margin:0}
+  .srow .chev{grid-row:2;grid-column:2}
+  .tl .srow{grid-template-columns:1fr 16px}
+  .drawer{top:auto;width:100%;height:88vh;border-left:0;border-top:1px solid var(--line2);border-radius:16px 16px 0 0}
+  @media(prefers-reduced-motion:no-preference){ .drawer{animation:slideU .22s ease} @keyframes slideU{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}} }
+  .cmdwrap{padding:0;align-items:stretch}
+  .cmd{border-radius:0;max-height:none;height:100%;width:100%}
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--panel);border-top:1px solid var(--line);
+    padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px))}
+  .bnav button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;color:var(--soft);min-height:52px;justify-content:center;border-radius:10px}
+  .bnav button[aria-current=page]{color:var(--accent);font-weight:600}
+  .pop{position:fixed;top:64px;left:12px;right:12px;transform:none;width:auto}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+  <symbol id="i-top" viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-bm" viewBox="0 0 24 24"><path d="M6 3.5h12v17l-6-4-6 4z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-side" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9 4.5v15"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+  <symbol id="i-logo" viewBox="0 0 24 24"><path d="M5 5h14M5 10h14M5 15h9M5 20h6" stroke-width="2.4"/></symbol>
+</svg>
+
+<nav class="side" id="side" aria-label="Sections">
+  <div class="brand"><span class="logo"><svg class="i"><use href="#i-logo"/></svg></span><b class="lbl">NEWS INTELLIGENCE</b></div>
+  <div class="nav" id="nav-main"></div>
+  <p class="nav-h topics">TOPICS</p>
+  <div class="nav topics" id="nav-topics"></div>
+  <p class="nav-h local">LOCAL NEWS</p>
+  <div class="local" style="padding:0 6px">
+    <label for="state" class="sr">State for local news</label>
+    <select id="state"></select>
+  </div>
+  <div class="nav side-foot">
+    <button id="theme-side"><svg class="i"><use href="#i-sun"/></svg><span class="lbl">Light mode</span></button>
+    <button id="about"><svg class="i"><use href="#i-info"/></svg><span class="lbl">About the data</span></button>
+    <button class="collapse-btn" id="collapse"><svg class="i"><use href="#i-side"/></svg><span class="lbl">Collapse sidebar</span></button>
+  </div>
+</nav>
+
+<div class="main">
+  <header class="top">
+    <button class="iconbtn menu" id="menu" aria-label="Open sections" aria-expanded="false"><svg class="i"><use href="#i-menu"/></svg></button>
+    <div class="datectl" style="position:relative">
+      <button class="iconbtn" id="prev" aria-label="Previous day"><svg class="i"><use href="#i-left"/></svg></button>
+      <button class="datebtn" id="datebtn" aria-haspopup="dialog" aria-expanded="false">
+        <span class="d" id="date-d">Choose a date</span><span class="s" id="date-s">Explore the news of any day</span>
+      </button>
+      <button class="iconbtn" id="next" aria-label="Next day"><svg class="i"><use href="#i-right"/></svg></button>
+      <div class="pop" id="pop" role="dialog" aria-label="Choose a date" hidden></div>
+    </div>
+    <div class="acts">
+      <button class="todaybtn" id="todaybtn">Today</button>
+      <button class="iconbtn" id="searchbtn" aria-label="Search news (press /)"><svg class="i"><use href="#i-search"/></svg></button>
+      <button class="iconbtn hide-m" id="refresh" aria-label="Refresh this day"><svg class="i"><use href="#i-refresh"/></svg></button>
+      <button class="iconbtn hide-m" id="theme" aria-label="Switch colour theme"><svg class="i"><use href="#i-sun"/></svg></button>
+    </div>
+  </header>
+  <main class="content" id="content" tabindex="-1"></main>
+</div>
+
+<nav class="bnav" aria-label="Main">
+  <button data-page="home"><svg class="i"><use href="#i-home"/></svg>Home</button>
+  <button data-page="topics"><svg class="i"><use href="#i-grid"/></svg>Topics</button>
+  <button data-page="timeline"><svg class="i"><use href="#i-clock"/></svg>Timeline</button>
+  <button data-page="archive"><svg class="i"><use href="#i-cal"/></svg>Archive</button>
+  <button data-page="saved"><svg class="i"><use href="#i-bm"/></svg>Saved</button>
+</nav>
+
+<div id="layer"></div>
+<p class="sr" id="live" role="status" aria-live="polite"></p>
+
+<script>
+"use strict";
+const TZ = "Asia/Kolkata";
+const STATES = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jammu and Kashmir","Jharkhand","Karnataka","Kerala","Ladakh","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Chandigarh","Puducherry"];
+const STATE_CITIES = { "Rajasthan":"jaipur|jodhpur|udaipur|kota|ajmer|bikaner|alwar|bhilwara", "Maharashtra":"mumbai|pune|nagpur|nashik|thane|aurangabad", "Delhi":"delhi|ncr", "Gujarat":"ahmedabad|surat|vadodara|rajkot|gandhinagar", "Karnataka":"bengaluru|bangalore|mysuru|mangaluru|hubballi", "Tamil Nadu":"chennai|coimbatore|madurai", "Telangana":"hyderabad|warangal", "West Bengal":"kolkata|howrah|siliguri", "Uttar Pradesh":"lucknow|kanpur|noida|varanasi|agra|prayagraj|ghaziabad", "Kerala":"kochi|thiruvananthapuram|kozhikode", "Punjab":"ludhiana|amritsar|jalandhar", "Madhya Pradesh":"bhopal|indore|jabalpur|gwalior", "Bihar":"patna|gaya", "Haryana":"gurugram|gurgaon|faridabad", "Odisha":"bhubaneswar|cuttack", "Assam":"guwahati" };
+
+// Fetch groups: 16 broad searches; every story is then sorted into categories on the device.
+const FEEDS = [
+  { id:"f-india",   label:"India",            q:'India', def:"india", tier:1 },
+  { id:"f-world",   label:"World",            q:'world OR international OR global', ed:"GB", def:"world", tier:1 },
+  { id:"f-politics",label:"Politics",         q:'politics OR election OR parliament OR "chief minister"', def:"politics", tier:1 },
+  { id:"f-gov",     label:"Policy & courts",  q:'government OR cabinet OR policy OR "Supreme Court" OR "High Court"', def:"govt" },
+  { id:"f-biz",     label:"Business",         q:'business OR company OR startup OR funding OR earnings', def:"business", tier:1 },
+  { id:"f-mkt",     label:"Markets",          q:'Sensex OR Nifty OR "stock market" OR shares', def:"markets", tier:1 },
+  { id:"f-eco",     label:"Economy & RBI",    q:'RBI OR economy OR inflation OR banking OR GDP', def:"economy" },
+  { id:"f-tech",    label:"Tech & AI",        q:'technology OR AI OR "artificial intelligence" OR smartphone', def:"tech", tier:1 },
+  { id:"f-sci",     label:"Science & space",  q:'science OR ISRO OR space OR research', def:"science", tier:1 },
+  { id:"f-def",     label:"Defence & infra",  q:'defence OR army OR infrastructure OR railway OR highway', def:"defence" },
+  { id:"f-auto",    label:"Auto & property",  q:'automobile OR "electric vehicle" OR "real estate" OR housing', def:"auto" },
+  { id:"f-cricket", label:"Cricket",          q:'cricket', def:"cricket", tier:1 },
+  { id:"f-sport",   label:"Other sports",     q:'football OR tennis OR hockey OR badminton OR Olympics OR chess', def:"othersports" },
+  { id:"f-ent",     label:"Entertainment",    q:'Bollywood OR film OR OTT OR Netflix OR celebrity', def:"entertainment" },
+  { id:"f-health",  label:"Health & education",q:'health OR hospital OR education OR exam OR university', def:"health" },
+  { id:"f-life",    label:"Climate & life",   q:'climate OR weather OR pollution OR travel OR lifestyle', def:"environment" },
+];
+// 36 categories. re: case-insensitive keyword test; cs: case-sensitive acronyms (so "us"/"who" aren't matched).
+const CATS = [
+  { id:"top", label:"Top stories" },
+  { id:"india", label:"India", re:/\b(india|indian|modi|delhi|mumbai|bengaluru|kolkata|chennai|hyderabad|lok sabha|rajya sabha|bjp)\b/i },
+  { id:"world", label:"World", re:/\b(china|russia|ukraine|israel|gaza|iran|pakistan|britain|europe|nato|japan|trump|putin|global|bangladesh|nepal|sri lanka|world)\b/i, cs:/\b(US|UK|UN|EU|USA)\b/ },
+  { id:"politics", label:"Politics", re:/\b(election|elections|polls?|bjp|congress|aap|minister|mla|parliament|lok sabha|rajya sabha|opposition|party|chief minister|campaign|vote)\b/i },
+  { id:"govt", label:"Government & policy", re:/\b(government|govt|policy|ministry|cabinet|scheme|notification|niti aayog|regulation|bill|ordinance|centre)\b/i },
+  { id:"courts", label:"Courts & legal", re:/\b(court|judge|verdict|bail|petition|cji|tribunal|nclt|lawsuit|legal|hearing|plea)\b/i, cs:/\b(SC|HC)\b/ },
+  { id:"business", label:"Business", re:/\b(business|company|firm|revenue|profit|earnings|quarter|deal|ceo|industry|sales)\b/i },
+  { id:"markets", label:"Stock markets", re:/\b(sensex|nifty|stock market|shares?|stocks?|market cap|ipo|sebi|bse|nse|rupee|gold price|crude)\b/i },
+  { id:"economy", label:"Economy", re:/\b(economy|economic|gdp|inflation|cpi|wpi|fiscal|trade deficit|exports?|imports?|gst|tax)\b/i },
+  { id:"banking", label:"Banking & RBI", re:/\b(rbi|repo|banks?|banking|nbfc|loans?|credit|interest rates?|monetary policy|upi|npci|fintech)\b/i },
+  { id:"corporate", label:"Corporate", re:/\b(ceo|board|resigns?|appoints?|stake|merger|acquisition|acquires|results|dividend|tata|reliance|adani|infosys|wipro|hdfc|icici|mahindra)\b/i },
+  { id:"startups", label:"Startups", re:/\b(startup|start-up|startups|funding|raises|series [a-e]|unicorn|venture|seed round)\b/i },
+  { id:"tech", label:"Technology", re:/\b(technology|tech|smartphone|iphone|android|apple|google|microsoft|meta|software|apps?|chips?|semiconductor|5g|cyber|internet|gadget|laptop)\b/i },
+  { id:"ai", label:"Artificial intelligence", re:/\b(ai|artificial intelligence|chatgpt|openai|gemini|llm|machine learning|genai|anthropic|claude)\b/i },
+  { id:"science", label:"Science", re:/\b(science|scientists?|research|study|discovery|physics|chemistry|biology|genome|species|fossil)\b/i },
+  { id:"space", label:"Space & ISRO", re:/\b(isro|nasa|space|satellite|rocket|moon|mars|chandrayaan|gaganyaan|orbit|astronaut)\b/i },
+  { id:"defence", label:"Defence", re:/\b(defence|defense|army|navy|air force|iaf|military|missile|drdo|border|soldiers?|terror|ceasefire)\b/i },
+  { id:"infra", label:"Infrastructure", re:/\b(infrastructure|highway|expressway|metro|railways?|rail|airport|port|bridge|nhai|vande bharat|construction)\b/i },
+  { id:"auto", label:"Automobile", re:/\b(cars?|suv|ev|evs|electric vehicles?|automobile|auto|two-wheeler|bike|maruti|hyundai|tata motors|tesla|vehicle sales)\b/i },
+  { id:"realestate", label:"Real estate", re:/\b(real estate|housing|property|realty|home loans?|rera|apartments?|builder)\b/i },
+  { id:"sports", label:"Sports" },
+  { id:"cricket", label:"Cricket", re:/\b(cricket|ipl|odi|t20i?|test match|bcci|wickets?|kohli|rohit|century|ranji)\b/i },
+  { id:"football", label:"Football", re:/\b(football|fifa|premier league|isl|la liga|messi|ronaldo|uefa|champions league)\b/i },
+  { id:"tennis", label:"Tennis", re:/\b(tennis|atp|wta|wimbledon|us open|french open|australian open|djokovic|alcaraz|sinner)\b/i },
+  { id:"othersports", label:"Other sports", re:/\b(hockey|badminton|chess|olympics?|athletics|wrestling|boxing|kabaddi|f1|formula 1|golf|shooting|asian games|commonwealth games)\b/i },
+  { id:"entertainment", label:"Entertainment", re:/\b(film|films|movie|actor|actress|celebrity|music|singer|box office|trailer|album)\b/i },
+  { id:"bollywood", label:"Bollywood", re:/\b(bollywood|shah rukh|salman|aamir|ranbir|deepika|alia|hindi film)\b/i },
+  { id:"ott", label:"OTT & streaming", re:/\b(netflix|prime video|hotstar|jiocinema|zee5|sonyliv|ott|streaming|web series)\b/i },
+  { id:"lifestyle", label:"Lifestyle", re:/\b(lifestyle|fashion|food|recipe|beauty|wellness|festival|diwali|navratri|horoscope)\b/i },
+  { id:"health", label:"Health", re:/\b(health|hospital|doctors?|disease|virus|covid|dengue|cancer|vaccine|medical|aiims)\b/i, cs:/\bWHO\b/ },
+  { id:"education", label:"Education", re:/\b(education|school|college|university|exam|neet|jee|cbse|ugc|students?|admission)\b/i },
+  { id:"environment", label:"Environment & climate", re:/\b(climate|environment|pollution|aqi|air quality|flood|cyclone|monsoon|heatwave|rain|earthquake|wildlife|forest|emissions)\b/i },
+  { id:"travel", label:"Travel", re:/\b(travel|tourism|tourists?|flights?|airlines?|visa|indigo|air india|passport|hotel)\b/i },
+  { id:"state", label:"" },          // filled with the selected state
+  { id:"misc", label:"Miscellaneous" },
+];
+const CAT_BY_ID = Object.fromEntries(CATS.map(c => [c.id, c]));
+const SPORT_KIDS = ["cricket","football","tennis","othersports"], ENT_KIDS = ["bollywood","ott"];
+const WEIGHTY = new Set(["india","world","politics","govt","courts","economy","banking","defence"]);
+const BRIEF = [
+  { h:"India", ids:["india","politics","govt","courts","defence","infra","state"] },
+  { h:"World", ids:["world"] },
+  { h:"Business & markets", ids:["business","markets","economy","banking","corporate","startups","auto","realestate"] },
+  { h:"Technology & science", ids:["tech","ai","science","space"] },
+  { h:"Sports", ids:["sports","cricket","football","tennis","othersports"] },
+  { h:"Entertainment", ids:["entertainment","bollywood","ott"], max:3 },
+];
+const EDITIONS = { IN:"hl=en-IN&gl=IN&ceid=IN:en", GB:"hl=en-GB&gl=GB&ceid=GB:en" };
+/* ================= helpers ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl = u => /^https?:\/\//i.test(u) ? u : "#";      // never let a feed inject javascript: links
+const store = {
+  get(k){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+
+/* ================= performance telemetry (dev-facing; shown in Connection > Diagnostics) ================= */
+const perf = {
+  t0: performance.now(), marks: {},
+  mark(name){ this.marks[name] = Math.round(performance.now() - this.t0); },
+  report(){
+    const m = this.marks;
+    return [
+      ["App shell", m.shell],
+      ["Cache ready", m.cacheReady!=null && m.shell!=null ? m.cacheReady-m.shell : null],
+      ["First content", m.firstLoad!=null && m.cacheReady!=null ? m.firstLoad-m.cacheReady : null],
+      ["Total to first content", m.firstLoad],
+    ].filter(([,v]) => v!=null);
+  }
+};
+
+/* ================= daily-pack storage (IndexedDB, localStorage fallback) =================
+   Daily news packs (the heavy data: hundreds of reports per day) live here instead of
+   localStorage, which caps around 5-10 MB total and made the old code evict old days
+   at just 12 entries. IndexedDB quota is typically hundreds of MB, so this keeps far
+   more history and never competes with saved-stories/settings for the same small budget.
+   If IndexedDB is unavailable (older browser, private-mode restrictions), everything
+   below transparently falls back to the original localStorage scheme so the app still
+   works exactly as before. */
+const PACKS_MAX = 90;                      // days kept before oldest are evicted
+const packs = (function(){
+  let db = null, idbFailed = !("indexedDB" in window);
+  const index = [];                        // in-memory list of cached keys, newest first — avoids sync IDB reads during render
+  function open(){
+    if(idbFailed) return Promise.resolve(null);
+    if(db) return Promise.resolve(db);
+    return new Promise(res => {
+      let req;
+      try{ req = indexedDB.open("newsintel", 1); }catch(e){ idbFailed = true; res(null); return; }
+      req.onupgradeneeded = () => { req.result.createObjectStore("packs"); };
+      req.onsuccess = () => { db = req.result; res(db); };
+      req.onerror = () => { idbFailed = true; res(null); };
+    });
+  }
+  async function init(){
+    const d = await open();
+    if(!d){ (store.get("news:v3:index")||[]).forEach(k => index.push(k)); return; }
+    await new Promise(res => {
+      const tx = d.transaction("packs","readonly"), st = tx.objectStore("packs"), req = st.getAllKeys();
+      req.onsuccess = () => { index.push(...req.result); res(); };
+      req.onerror = () => res();
+    });
+  }
+  async function get(key){
+    const d = await open();
+    if(!d) return store.get(key);
+    return new Promise(res => {
+      const tx = d.transaction("packs","readonly"), req = tx.objectStore("packs").get(key);
+      req.onsuccess = () => res(req.result || null);
+      req.onerror = () => res(null);
+    });
+  }
+  async function set(key, entry){
+    const d = await open();
+    if(!d){ const idx = index.filter(k => k!==key); idx.unshift(key); while(idx.length>12) idx.pop();
+      index.length = 0; index.push(...idx); store.set("news:v3:index", idx); return store.set(key, entry); }
+    return new Promise(res => {
+      const tx = d.transaction("packs","readwrite"), st = tx.objectStore("packs");
+      st.put(entry, key);
+      tx.oncomplete = async () => {
+        const existing = index.indexOf(key); if(existing>=0) index.splice(existing,1);
+        index.unshift(key);
+        if(index.length > PACKS_MAX){        // evict oldest beyond the cap, in the background
+          const evict = index.splice(PACKS_MAX);
+          const tx2 = (await open()).transaction("packs","readwrite"), st2 = tx2.objectStore("packs");
+          evict.forEach(k => st2.delete(k));
+        }
+        res(true);
+      };
+      tx.onerror = () => res(false);
+    });
+  }
+  function keys(){ return index.slice(); }   // sync, in-memory — safe to call during render
+  return { init, get, set, keys };
+})();
+const istDate = d => new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+const todayIST = () => istDate(new Date());
+function shiftDay(iso, n){ const d = new Date(iso+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+const fmtTime = ts => new Intl.DateTimeFormat("en-IN",{timeZone:TZ,hour:"numeric",minute:"2-digit"}).format(new Date(ts));
+const fmtHour = ts => new Intl.DateTimeFormat("en-IN",{timeZone:TZ,hour:"numeric"}).format(new Date(ts));
+const longDate = iso => new Intl.DateTimeFormat("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(iso+"T12:00:00Z"));
+const shortDate = iso => new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short",timeZone:"UTC"}).format(new Date(iso+"T12:00:00Z"));
+function ago(ts){ const m = Math.round((Date.now()-ts)/60000); if(m<1) return m<-5 ? "" : "just now"; if(m<60) return m+" min ago"; const h = Math.round(m/60); if(h<24) return h+" h ago"; const d = Math.round(h/24); return d+" d ago"; }
+
+/* ================= fetching ================= */
+// Browsers block reading another site directly, so feeds come through relays. Routes are tried ONE AT A TIME:
+// the last route that worked goes first, a route that answers "slow down" (HTTP 429) rests with growing
+// cooldowns, and each route is paced so a burst of sections never floods it. Inside an APK with
+// CapacitorHttp, or with your own relay set in Connection settings, the first route simply works.
+const ROUTES = [
+  { id:"custom",     make: u => (store.get("news:relay") || "") + encodeURIComponent(u), timeout:8000, when: () => !!store.get("news:relay") },
+  { id:"direct",     make: u => u, timeout:2500 },
+  { id:"script",     jsonp:true, make: (u, cb) => "https://api.allorigins.win/get?url=" + encodeURIComponent(u) + "&callback=" + cb, timeout:7000 },
+  { id:"rss2json",   make: u => "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(u), timeout:6000 },
+  { id:"allorigins", make: u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u), timeout:6000 },
+  { id:"codetabs",   make: u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u), timeout:6000 },
+  { id:"corsproxy",  make: u => "https://corsproxy.io/?url=" + encodeURIComponent(u), timeout:6000 },
+];
+const PACE_MS = 450;                              // minimum gap between request starts on the same route
+const health = store.get("news:routes") || {};    // { id: { ok, fails, until, strikes } }
+const lastStart = {};
+const sleep = (ms, signal) => new Promise((res, rej) => { const t = setTimeout(res, ms); if(signal) signal.addEventListener("abort", () => { clearTimeout(t); rej(new Error("cancelled")); }); });
+function saveHealth(){ store.set("news:routes", health); }
+function routeOrder(){
+  const now = Date.now();
+  return ROUTES.filter(r => !r.when || r.when()).filter(r => !(health[r.id] && health[r.id].until > now))
+    .sort((a, b) => ((health[b.id]||{}).ok||0) - ((health[a.id]||{}).ok||0));   // most recently successful first
+}
+function nextAvailableIn(){ const now = Date.now(); const w = ROUTES.map(r => (health[r.id]||{}).until||0).filter(t => t>now); return w.length ? Math.min(...w)-now : 0; }
+let jsonpSeq = 0;
+function jsonp(src, ms, signal){
+  return new Promise((resolve, reject) => {
+    const cb = "__news_cb" + (++jsonpSeq) + "_" + Date.now(), s = document.createElement("script");
+    const done = (fn, v) => { clearTimeout(t); delete window[cb]; s.remove(); signal.removeEventListener("abort", onAbort); fn(v); };
+    const onAbort = () => done(reject, new Error("cancelled"));
+    const t = setTimeout(() => done(reject, new Error("timed out")), ms);
+    window[cb] = data => done(resolve, data);
+    s.onerror = () => done(reject, new Error("script blocked"));
+    s.src = src(cb); signal.addEventListener("abort", onAbort); document.head.appendChild(s);
+  });
+}
+async function tryRoute(r, url, signal){
+  const gap = (lastStart[r.id]||0) + PACE_MS - Date.now();
+  if(gap > 0) await sleep(gap, signal);
+  lastStart[r.id] = Date.now();
+  if(r.jsonp){
+    const data = await jsonp(cb => r.make(url, cb), r.timeout, signal);
+    const code = data && data.status && data.status.http_code;
+    if(code===429) throw Object.assign(new Error("rate limited"), { code:"rate" });
+    const txt = data && typeof data.contents==="string" ? data.contents : "";
+    if(txt.indexOf("<rss")>=0 || txt.indexOf("<item")>=0) return { route:r.id, body:txt };
+    throw new Error("unexpected reply");
+  }
+  const ctrl = new AbortController(), onAbort = () => ctrl.abort();
+  signal.addEventListener("abort", onAbort);
+  const t = setTimeout(() => ctrl.abort(), r.timeout);
+  try{
+    const res = await fetch(r.make(url), { signal: ctrl.signal });
+    if(res.status===429) throw Object.assign(new Error("rate limited"), { code:"rate", retryAfter: +res.headers.get("retry-after") || 0 });
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const txt = await res.text();
+    if(txt.indexOf("<rss")>=0 || txt.indexOf("<item")>=0) return { route:r.id, body:txt };
+    if(txt.charAt(0)==="{"){ const j = JSON.parse(txt); if(j.status==="ok" && Array.isArray(j.items)) return { route:r.id, json:j }; }
+    throw new Error("unexpected reply");
+  } finally { clearTimeout(t); signal.removeEventListener("abort", onAbort); }
+}
+async function fetchFeed(url, signal){
+  let sawRate = false;
+  for(let pass = 0; pass < 2; pass++){
+    const order = routeOrder();
+    for(const r of order){
+      if(signal.aborted) throw new Error("cancelled");
+      try{
+        const res = await tryRoute(r, url, signal);
+        health[r.id] = { ok: Date.now(), fails:0, until:0, strikes:0 }; saveHealth();
+        return res;
+      }catch(e){
+        if(signal.aborted) throw e;
+        const h = health[r.id] = health[r.id] || { ok:0, fails:0, until:0, strikes:0 };
+        if(e.code==="rate"){                       // back off exponentially: 30 s, 60 s, 120 s ... max 10 min
+          sawRate = true; h.strikes = (h.strikes||0)+1;
+          h.until = Date.now() + Math.max(e.retryAfter*1000, Math.min(600e3, 30e3 * Math.pow(2, h.strikes-1)));
+        } else if(++h.fails >= 3){ h.until = Date.now() + 60e3; h.fails = 0; }   // repeatedly failing: rest for a minute
+        saveHealth();
+      }
+    }
+    // Every route is resting: wait for the soonest one (up to 20 s) once, rather than giving up at once.
+    const wait = nextAvailableIn();
+    if(pass===0 && wait>0 && wait<=20e3){ await sleep(wait+200, signal); continue; }
+    break;
+  }
+  throw Object.assign(new Error(sawRate ? "rate limited" : "unreachable"), { code: sawRate ? "rate" : "net" });
+}
+function feedUrl(feed, date){
+  // Google's date operators don't follow IST. Ask for a wider window (the day before through the day itself
+  // in Google's calendar), then keep only reports whose timestamp falls on the chosen IST day.
+  const q = "(" + feed.q + ") after:" + shiftDay(date,-2) + " before:" + shiftDay(date,1);
+  return "https://news.google.com/rss/search?q=" + encodeURIComponent(q) + "&" + EDITIONS[feed.ed||"IN"];
+}
+function splitSource(title){ const i = title.lastIndexOf(" - "); return i>0 ? [title.slice(0,i).trim(), title.slice(i+3).trim()] : [title.trim(), ""]; }
+function parseFeed(res, feedId){
+  let out;
+  if(res.json){
+    out = res.json.items.map(it => { const p = splitSource(it.title||"");
+      return { title:p[0], link:it.link||"", source:p[1] || it.author || "Unknown outlet", ts:Date.parse(String(it.pubDate||"").replace(" ","T")+"Z"), feed:feedId }; });
+  } else {
+    const doc = new DOMParser().parseFromString(res.body, "text/xml");
+    out = [...doc.querySelectorAll("item")].map(it => {
+      const src = it.querySelector("source"); const source = src ? src.textContent.trim() : "";
+      let title = (it.querySelector("title")||{}).textContent || "";
+      if(source && title.endsWith(" - "+source)) title = title.slice(0, -(source.length+3));
+      return { title:title.trim(), link:(it.querySelector("link")||{}).textContent || "", source:source || "Unknown outlet", ts:Date.parse((it.querySelector("pubDate")||{}).textContent || ""), feed:feedId };
+    });
+  }
+  return out.filter(x => x.title && x.link && isFinite(x.ts));
+}
+
+/* ================= categorising ================= */
+function categorise(item, stateName){
+  const t = item.title, cats = new Set();
+  for(const c of CATS){ if((c.re && c.re.test(t)) || (c.cs && c.cs.test(t))) cats.add(c.id); }
+  if(stateName){
+    const re = new RegExp("\\b(" + stateName.toLowerCase() + (STATE_CITIES[stateName] ? "|"+STATE_CITIES[stateName] : "") + ")\\b", "i");
+    if(item.feed==="f-state" || re.test(t)) cats.add("state");
+  }
+  const feed = FEEDS.find(f => f.id===item.feed);
+  if(!cats.size && feed) cats.add(feed.def);
+  if(SPORT_KIDS.some(k => cats.has(k))) cats.add("sports");
+  if(ENT_KIDS.some(k => cats.has(k))) cats.add("entertainment");
+  if(!cats.size) cats.add("misc");
+  return cats;
+}
+
+/* ================= clustering ================= */
+const STOP = new Set("a an the of to in on for and or with at by from as is are was were be been after over amid into its it this that says said new live latest news update updates vs than more his her their will can may how why what who".split(" "));
+const NUMWORD = {one:"1",two:"2",three:"3",four:"4",five:"5",six:"6",seven:"7",eight:"8",nine:"9",ten:"10"};
+function features(title){
+  const norm = title.toLowerCase().replace(/[’']/g,"").replace(/[^a-z0-9\u0900-\u097f%.₹$ ]+/g," ");
+  const words = norm.split(/\s+/).map(w => NUMWORD[w] || w).filter(Boolean);
+  const tk = new Set(words.filter(w => w.length>2 && !STOP.has(w)));
+  const nums = new Set(words.filter(w => /\d/.test(w)).map(w => w.replace(/[^\d.]/g,"")).filter(Boolean));
+  // Entities: capitalised words/sequences in the original headline (people, places, organisations).
+  const ents = new Set((title.match(/\b[A-Z][a-zA-Z&.]+(?:\s+[A-Z][a-zA-Z&.]+)*/g) || []).map(e => e.toLowerCase()).filter(e => e.length>2 && !STOP.has(e)));
+  return { tk, nums, ents, key: words.join(" ") };
+}
+function overlap(a, b){ let n = 0; a.forEach(x => { if(b.has(x)) n++; }); return n; }
+function sameEvent(A, B){
+  const inter = overlap(A.tk, B.tk), small = Math.min(A.tk.size, B.tk.size);
+  if(!small) return false;
+  const containment = inter/small, jaccard = inter/(A.tk.size+B.tk.size-inter);
+  if(containment < 0.6 && jaccard < 0.45) return false;
+  // Guard against merging different events with similar wording.
+  if(A.nums.size && B.nums.size && !overlap(A.nums, B.nums) && containment < 0.85) return false;   // "5 killed" vs "12 killed"
+  if(A.ents.size && B.ents.size && !overlap(A.ents, B.ents) && containment < 0.8) return false;    // different people/places
+  return true;
+}
+function cluster(items, stateName){
+  const sorted = items.slice().sort((x,y) => x.ts - y.ts), clusters = [];
+  for(const it of sorted){
+    const f = features(it.title), cats = categorise(it, stateName);
+    let home = null;
+    for(const c of clusters){ if(sameEvent(f, c.f)){ home = c; break; } }
+    if(!home){ home = { f, lead:it, reports:[], cats:new Set() }; clusters.push(home); }
+    cats.forEach(x => home.cats.add(x));
+    if(!home.reports.some(r => r.source===it.source)) home.reports.push(Object.assign({ key:f.key }, it));
+  }
+  return clusters.map((c, idx) => {
+    const keys = {}; c.reports.forEach(r => keys[r.key] = (keys[r.key]||0)+1);
+    const identical = Object.values(keys).filter(n => n>1).reduce((a,n) => a+n, 0);
+    const indep = Object.keys(keys).length;          // distinct wordings ≈ independent reporting
+    return { id:idx, lead:c.lead, reports:c.reports, outlets:c.reports.length, indep, identical, cats:[...c.cats], ents:c.f.ents, tk:c.f.tk,
+             first:c.lead.ts, last:Math.max(...c.reports.map(r => r.ts)) };
+  });
+}
+// Top-stories ranking: independent coverage first, then total outlets, breadth, weighty topics, and (today only) recency.
+function rankScore(c, isToday){
+  let s = 3*Math.log2(1+c.indep) + 1.5*Math.log2(1+c.outlets) + 0.6*Math.min(3, c.cats.length) + (c.cats.some(x => WEIGHTY.has(x)) ? 1 : 0);
+  if(isToday){ const h = (Date.now()-c.last)/3600e3; s += h<3 ? 2 : h<6 ? 1 : 0; }
+  return s;
+}
+function related(c, all){
+  if(!c.ents.size) return [];
+  return all.filter(o => o!==c && overlap(o.ents, c.ents)>=1 && overlap(o.tk, c.tk)>=2 && o.cats.some(x => c.cats.includes(x)))
+            .sort((a,b) => b.outlets-a.outlets).slice(0,4);
+}
+
+
+/* ================= caching ================= */
+function cacheKey(d){ return "news:v3:"+d+":"+(stateName()||"-"); }
+function cacheFresh(entry, d){
+  if(!entry) return false;
+  const age = Date.now()-entry.at, today = todayIST();
+  if(d===today) return age < 10*60e3;
+  if(d===shiftDay(today,-1)) return age < 3*3600e3;     // yesterday can still gain late reports
+  return true;                                           // older days: kept until you tap Refresh
+}
+async function saveCache(d){
+  await packs.set(cacheKey(d), { at:view.at, items:view.items, failed:view.failed });
+}
+
+
+function feedsFor(){ const st = stateName(); return FEEDS.concat(st ? [{ id:"f-state", label:st, q:'"'+st+'"' + (STATE_CITIES[st] ? " OR " + STATE_CITIES[st].split("|").slice(0,4).join(" OR ") : ""), def:"state" }] : []); }
+
+// The same outlet can appear in several feeds with the same link; keep one copy.
+function dedupeReports(items){ const seen = new Set(); return items.filter(x => { const k = x.link || (x.source+"|"+x.title); if(seen.has(k)) return false; seen.add(k); return true; }); }
+
+
+/* ================= app state ================= */
+const PRIMARY = ["india","world","politics","business","markets","tech","sports","science","entertainment"];
+const HOME_BRIEF = [
+  { h:"India", ids:["india","govt","courts","defence","infra","state"] }, { h:"World", ids:["world"] }, { h:"Politics", ids:["politics"] },
+  { h:"Business", ids:["business","corporate","startups","economy","banking"] }, { h:"Markets", ids:["markets"] },
+  { h:"Technology", ids:["tech","ai"] }, { h:"Science", ids:["science","space","health","environment"] },
+  { h:"Sports", ids:["sports","cricket","football","tennis","othersports"] }, { h:"Entertainment", ids:["entertainment","bollywood","ott"] },
+];
+// One matcher for search and the watchlist: headline, outlet, topic name, or named entity.
+function matches(c, q){ q = q.toLowerCase(); return c.reports.some(r => r.title.toLowerCase().includes(q) || r.source.toLowerCase().includes(q)) || c.cats.some(x => catLabel(x).toLowerCase().includes(q)) || [...c.ents].some(e => e.includes(q)); }
+const view = { date:null, items:[], clusters:[], failed:[], at:0, token:0, ctrl:null, loading:false, stat:{}, codes:[], empty:null,
+               page:"home", cat:"top", sort:"top", limit:40, calMonth:null,
+               refreshing:false, offline:false, pending:null, newLinks:null, note:"", src:"", cover:"all", prefetchCtrl:null, lastVisit:null };
+const stateName = () => $("state").value;
+const isToday = () => view.date===todayIST();
+const icon = id => '<svg class="i" aria-hidden="true"><use href="#'+id+'"/></svg>';
+function catLabel(id){ return id==="state" ? stateName() : (CAT_BY_ID[id]||{label:id}).label; }
+function niceDate(iso){
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})
+    .formatToParts(new Date(iso+"T12:00:00Z")).map(x => [x.type, x.value]));
+  return p.weekday+", "+p.day+" "+p.month+" "+p.year;
+}
+function primaryCat(c){ const p = PRIMARY.concat(["state"]).find(x => c.cats.includes(x)); return p || c.cats.find(x => x!=="misc") || "misc"; }
+function cov(c){
+  const n = c.outlets, cls = n>=10 ? "c10" : n>=5 ? "c5" : n>=2 ? "c2" : "c1";
+  return '<span class="cov '+cls+'"><i aria-hidden="true"></i>'+(n===1 ? "Single-source report" : "Covered by "+n+" outlets")+'</span>';
+}
+function ranked(){ const t = isToday(); return view.clusters.slice().sort((a,b) => rankScore(b,t)-rankScore(a,t)); }
+function counts(){ const n = {}; view.clusters.forEach(c => c.cats.forEach(x => n[x] = (n[x]||0)+1)); return n; }
+const byId = id => view.clusters.find(c => c.id===id);
+const announce = t => { $("live").textContent = t; };
+
+/* ================= shell: sidebar, header ================= */
+function renderNav(){
+  const n = counts(), page = view.page, cat = view.cat;
+  const item = (attrs, ic, label, cur, count) => '<button '+attrs+(cur ? ' aria-current="page"' : '')+'>'+ic+'<span class="lbl">'+esc(label)+'</span>'+(count!=null ? '<span class="n">'+count+'</span>' : '')+'</button>';
+  $("nav-main").innerHTML =
+      item('data-page="home"', icon("i-home"), "Home", page==="home")
+    + item('data-page="home" data-anchor="brief"', icon("i-brief"), "Daily briefing", false)
+    + item('data-cat="top"', icon("i-top"), "Top stories", page==="cat" && cat==="top")
+    + '<p class="nav-h">EXPLORE</p>'
+    + item('data-page="timeline"', icon("i-clock"), "Timeline", page==="timeline")
+    + item('data-page="archive"', icon("i-cal"), "Archive", page==="archive")
+    + item('data-page="saved"', icon("i-bm"), "Saved", page==="saved", (store.get("news:saved")||[]).length || null)
+    + item('id="nav-search"', icon("i-search"), "Search", false)
+    + item('id="nav-conn"', icon("i-refresh"), "Connection", false);
+  const dot = '<span class="dot" aria-hidden="true"></span>';
+  const prim = PRIMARY.concat(stateName() ? ["state"] : []);
+  const secondary = CATS.filter(c => !["top","state","sports","entertainment"].includes(c.id) && !PRIMARY.includes(c.id) && (n[c.id] || !view.clusters.length));
+  const open = $("nav-topics").dataset.more==="1";
+  $("nav-topics").innerHTML = prim.map(id => item('data-cat="'+id+'"', dot, catLabel(id), page==="cat" && cat===id, view.clusters.length ? (n[id]||0) : null)).join("")
+    + '<button id="more-toggle" aria-expanded="'+open+'">'+dot+'<span class="lbl">'+(open ? "Fewer topics" : "More topics")+'</span></button>'
+    + '<div class="more-topics'+(open ? " open" : "")+'">'+secondary.map(c => item('data-cat="'+c.id+'"', dot, c.label, page==="cat" && cat===c.id, view.clusters.length ? (n[c.id]||0) : null)).join("")+'</div>';
+  document.querySelectorAll(".bnav button").forEach(b => { const p = b.dataset.page; b.toggleAttribute("aria-current", p===page || (p==="topics" && page==="cat")); if(b.hasAttribute("aria-current")) b.setAttribute("aria-current","page"); });
+}
+function renderHeader(){
+  const d = view.date;
+  const shortNice = iso => new Intl.DateTimeFormat("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(iso+"T12:00:00Z")).replace(/,?\s(\d)/, ", $1");
+  $("date-d").innerHTML = d ? '<span class="full">'+esc(niceDate(d))+'</span><span class="short">'+esc(shortNice(d))+'</span>' : "Choose a date";
+  const upd = view.at && view.items.length ? fmtTime(view.at)+" IST" : "";
+  if(d && view.empty && !view.loading){ $("date-s").textContent = "Couldn\u2019t load \u00b7 see below"; $("next").disabled = d >= todayIST(); $("prev").disabled = false; $("todaybtn").setAttribute("aria-pressed", String(isToday())); return; }
+  $("date-s").innerHTML = !d ? "Loading today\u2019s news"
+    : view.offline ? "Offline \u00b7 saved news"+(upd ? " from "+upd : "")
+    : view.refreshing ? (isToday() ? '<span class="live">\u25CF</span> ' : "")+"Refreshing\u2026"+(upd ? " \u00b7 saved "+upd : "")
+    : view.loading ? "Collecting news\u2026"
+    : isToday() ? '<span class="live">\u25CF Live</span>'+(upd ? " \u00b7 Updated "+upd : "")
+    : "Historical \u00b7 IST"+(upd ? " \u00b7 retrieved "+upd : "");
+  if(view.note && !view.refreshing && !view.loading) $("date-s").innerHTML += " \u00b7 "+esc(view.note);
+  $("next").disabled = !d || d >= todayIST();
+  $("prev").disabled = !d;
+  $("todaybtn").setAttribute("aria-pressed", String(isToday()));
+  document.title = d ? niceDate(d)+" \u2014 Daily News Intelligence" : "Daily News Intelligence";
+}
+
+/* ================= calendar (shared by the date popover and the archive) ================= */
+function cachedDates(){ return new Set(packs.keys().map(k => k.split(":")[2])); }
+function calHtml(month){             // month = "YYYY-MM"
+  const [y, m] = month.split("-").map(Number), first = new Date(Date.UTC(y, m-1, 1)), days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const today = todayIST(), has = cachedDates(), lead = first.getUTCDay();
+  const label = new Intl.DateTimeFormat("en-IN",{month:"long",year:"numeric",timeZone:"UTC"}).format(first);
+  const nextMonth = new Date(Date.UTC(y, m, 1)).toISOString().slice(0,7);
+  let h = '<div class="cal-h"><button class="iconbtn" data-cal="'+new Date(Date.UTC(y, m-2, 1)).toISOString().slice(0,7)+'" aria-label="Previous month">'+icon("i-left")+'</button><b>'+label+'</b>'
+    + '<button class="iconbtn" data-cal="'+nextMonth+'" aria-label="Next month"'+(nextMonth > today.slice(0,7) ? " disabled" : "")+'>'+icon("i-right")+'</button></div><div class="cal" role="grid">'
+    + ["S","M","T","W","T","F","S"].map(w => '<span class="wd" aria-hidden="true">'+w+'</span>').join("") + '<span></span>'.repeat(lead);
+  for(let d=1; d<=days; d++){
+    const iso = month+"-"+String(d).padStart(2,"0");
+    const cls = [iso===view.date ? "sel" : "", iso===today ? "today" : "", has.has(iso) ? "has" : ""].filter(Boolean).join(" ");
+    h += '<button data-pick="'+iso+'" class="'+cls+'"'+(iso>today ? " disabled" : "")+' aria-label="'+esc(niceDate(iso))+(has.has(iso) ? ", saved" : "")+'">'+d+'</button>';
+  }
+  return h + '</div><p class="cal-note">Dots mark days already saved on this device.</p>';
+}
+function openPop(){
+  view.calMonth = (view.date || todayIST()).slice(0,7);
+  const t = todayIST(), q = [["Today",0],["Yesterday",-1],["7 days ago",-7],["30 days ago",-30]];
+  $("pop").innerHTML = '<div class="quick">'+q.map(([l,n]) => '<button class="chip" data-pick="'+shiftDay(t,n)+'" aria-pressed="'+(shiftDay(t,n)===view.date)+'">'+l+'</button>').join("")+'</div><div id="popcal">'+calHtml(view.calMonth)+'</div>';
+  $("pop").hidden = false; $("datebtn").setAttribute("aria-expanded","true");
+  const sel = $("pop").querySelector(".sel") || $("pop").querySelector(".chip"); if(sel) sel.focus();
+}
+function closePop(){ $("pop").hidden = true; $("datebtn").setAttribute("aria-expanded","false"); }
+
+/* ================= page renderers ================= */
+function rowHtml(c){
+  return '<li><button class="srow" data-open="'+c.id+'"><span class="tm">'+fmtTime(c.first)+'<em>'+esc(catLabel(primaryCat(c)))+'</em></span>'
+    + '<span><span class="hl">'+esc(c.lead.title)+'</span><span class="meta"><span class="src">'+esc(c.lead.source)+'</span><span aria-hidden="true">\u00b7</span>'+cov(c)+'</span></span>'
+    + '<span class="chev">'+icon("i-right")+'</span></button></li>';
+}
+function buildPanel(){
+  const ids = Object.keys(view.stat); if(!view.loading || !ids.length) return "";
+  const done = ids.filter(i => view.stat[i].s!=="wait").length;
+  const tier = t => ids.filter(i => (view.stat[i].tier||2)===t);
+  const list = arr => arr.map(i => '<li data-s="'+view.stat[i].s+'">'+esc(view.stat[i].label)+'</li>').join("");
+  return '<section class="card build" aria-label="Loading progress"><h2>BUILDING YOUR DAILY BRIEFING</h2>'
+    + '<p class="kpi-note" style="margin:0 0 6px">Core news</p><ul>'+list(tier(1))+'</ul>'
+    + '<p class="kpi-note" style="margin:10px 0 6px">More topics'+(tier(1).every(i => view.stat[i].s!=="wait") ? "" : " (after core news)")+'</p><ul>'+list(tier(2))+'</ul><ul style="display:none">'
+    + ""
+    + '</ul><p class="count">'+done+' of '+ids.length+' sections \u00b7 '+view.items.length+' reports collected'+(view.clusters.length ? ' \u2192 '+view.clusters.length+' unique stories' : '')+'</p></section>';
+}
+function warnPanel(){
+  if(view.loading || !view.failed.length || !view.date || !view.clusters.length) return "";
+  const total = feedsFor().length, rate = view.codes.length && view.codes.every(c => c==="rate");
+  return '<section class="card warn" role="alert"><p><b>'+(total-view.failed.length)+' of '+total+' sections loaded.</b> '
+    + esc(view.failed.map(id => (feedsFor().find(f => f.id===id)||{}).label).filter(Boolean).join(", "))+' unavailable'+(rate ? " (the news service is limiting requests)" : "")+'.</p>'
+    + '<button class="btn sec2" id="retry">Retry</button></section>';
+}
+function emptyPanel(){
+  const e = view.empty; if(!e) return "";
+  return '<div class="empty"><b>'+esc(e.title)+'</b>'+esc(e.text)+'<div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn sec2" id="retry-all">Retry</button>'
+    + (e.relay ? '<button class="btn pri" id="open-conn">Set up your own relay</button>' : '')+'</div>'
+    + (e.relay ? '<div class="card" style="text-align:left;padding:12px 14px;margin:18px auto 0;max-width:520px"><b style="font-size:.9rem;font-family:var(--sans)">What your phone sees</b><ul class="covlist" id="diag"></ul><button class="btn sec2" id="diag-copy" hidden style="margin-top:8px">Copy results</button></div>' : '')+'</div>';
+}
+function briefing(){
+  const all = ranked(), used = new Set(), lines = [];
+  HOME_BRIEF.forEach(g => {
+    if(lines.length>=8) return;
+    const c = all.find(x => !used.has(x.id) && x.cats.some(y => g.ids.includes(y)) && (!["India","Politics","Business"].includes(g.h) || !x.cats.some(y => y==="sports" || y==="entertainment")));
+    if(c){ used.add(c.id); lines.push([g.h, c]); }
+  });
+  if(!lines.length) return "";
+  return '<section class="sec card brief" id="brief" aria-labelledby="brief-h"><div class="when">'+esc(niceDate(view.date))+' \u00b7 Daily briefing</div>'
+    + '<h2 id="brief-h">'+(isToday() ? "Here\u2019s what happened today." : "Here\u2019s what happened on "+esc(niceDate(view.date).split(", ")[1])+".")+'</h2><ul>'
+    + lines.map(([h, c]) => '<li><button data-open="'+c.id+'"><span class="area">'+esc(h)+'</span><span class="t">'+esc(c.lead.title)+'</span></button></li>').join("")
+    + '</ul><p class="note">The most widely covered story in each area, in the publisher\u2019s own words. Tap any line for sources.</p></section>';
+}
+function kpis(){
+  const cs = view.clusters; if(!cs.length) return "";
+  const n = counts(), topics = Object.keys(n).filter(k => k!=="misc").length;
+  const ts = view.items.map(x => x.ts), total = feedsFor().length;
+  return '<section class="sec" aria-label="Day in numbers"><div class="kpis">'
+    + [[cs.length,"Unique stories"],[view.items.length,"Reports"],[new Set(view.items.map(x => x.source)).size,"Sources"],[topics,"Topics covered"],[cs.filter(c => c.indep>=2).length,"Major developments"]]
+      .map(([v,l]) => '<div class="card kpi"><b>'+v+'</b><span>'+l+'</span></div>').join("")
+    + '</div>'+activity()+'<p class="kpi-note">First report '+fmtTime(Math.min(...ts))+' \u00b7 latest '+fmtTime(Math.max(...ts))+' IST \u00b7 '+(total-view.failed.length)+' of '+total+' sections'+(view.loading ? " so far" : "")+'</p></section>';
+}
+function activity(){
+  const hrs = new Array(24).fill(0);
+  view.items.forEach(x => { const h = +new Intl.DateTimeFormat("en-GB",{timeZone:TZ,hour:"2-digit",hour12:false}).format(new Date(x.ts)) % 24; hrs[h]++; });
+  const max = Math.max(...hrs); if(!max) return "";
+  const peak = hrs.indexOf(max), lab = h => new Intl.DateTimeFormat("en-IN",{hour:"numeric",timeZone:"UTC"}).format(new Date(Date.UTC(2000,0,1,h)));
+  return '<div class="act card" role="img" aria-label="News activity by hour: busiest around '+lab(peak)+' IST with '+max+' reports">'
+    + '<div class="act-h"><span>News activity</span><span>Busiest: '+lab(peak)+' IST \u00b7 '+max+' reports</span></div><div class="bars">'
+    + hrs.map((n, h) => '<i style="height:'+(n ? Math.max(8, Math.round(n/max*100)) : 3)+'%" class="'+(n ? "" : "z")+'" title="'+lab(h)+': '+n+'"></i>').join("")
+    + '</div><div class="act-x"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span></div></div>';
+}
+function watchlist(){
+  const terms = store.get("news:watch") || [];
+  const sugg = ["RBI","Sensex","AI","ISRO","Cricket"].concat(stateName() ? [stateName()] : []).filter(t => !terms.some(x => x.toLowerCase()===t.toLowerCase())).slice(0,5);
+  const blocks = terms.map((t, i) => {
+    const hits = ranked().filter(c => matches(c, t));
+    return '<div class="wl"><div class="wl-h"><b>'+esc(t)+'</b><span class="kpi-note" style="margin:0">'+hits.length+' stor'+(hits.length===1?"y":"ies")+'</span>'
+      + '<button class="iconbtn" data-unwatch="'+i+'" aria-label="Remove '+esc(t)+' from watchlist" style="width:30px;height:30px">'+icon("i-x")+'</button></div>'
+      + (hits.length ? '<ul>'+hits.slice(0,2).map(c => '<li><button data-open="'+c.id+'">'+esc(c.lead.title)+'<small>'+esc(c.lead.source)+' \u00b7 '+fmtTime(c.first)+'</small></button></li>').join("")+'</ul>'
+        + (hits.length>2 ? '<button class="link" data-watchq="'+esc(t)+'">See all '+hits.length+' \u2192</button>' : '') : '<p class="kpi-note" style="margin:4px 0 0">Nothing on this day.</p>')+'</div>';
+  }).join("");
+  return '<section class="sec" aria-labelledby="wl-h"><div class="sec-h"><h2 id="wl-h">My watchlist</h2></div>'
+    + (terms.length ? '<div class="wls">'+blocks+'</div>' : '<p class="kpi-note" style="margin:0 0 8px">Follow topics you care about; matching stories appear here for any date.</p>')
+    + '<form class="wl-add" id="wl-form"><label for="wl-in" class="sr">Add a topic to your watchlist</label><input id="wl-in" placeholder="Add a topic, e.g. RBI" maxlength="40" autocomplete="off"><button class="btn sec2" type="submit">Add</button></form>'
+    + (sugg.length ? '<div style="margin-top:6px">'+sugg.map(t => '<button class="chip" data-watch="'+esc(t)+'" style="margin:4px 4px 0 0">+ '+esc(t)+'</button>').join("")+'</div>' : '')
+    + '</section>';
+}
+function topStories(){
+  const r = ranked(); if(!r.length) return "";
+  const [lead, ...rest] = r;
+  return '<section class="sec" aria-labelledby="top-h"><div class="sec-h"><h2 id="top-h">Top stories</h2><button class="link" data-cat="top">All top stories</button></div>'
+    + '<div class="card tops"><button class="lead" data-open="'+lead.id+'"><span class="k">TOP STORY \u00b7 '+esc(catLabel(primaryCat(lead)).toUpperCase())+'</span>'
+    + '<span class="hl" style="display:block;font-family:var(--serif);font-weight:650;font-size:1.55rem;line-height:1.2;margin:8px 0 10px">'+esc(lead.lead.title)+'</span>'
+    + '<span class="meta"><span class="src">'+esc(lead.lead.source)+'</span><span>'+fmtTime(lead.first)+' IST</span>'+cov(lead)+'</span></button>'
+    + '<div class="rest">'+rest.slice(0,4).map(c => '<button data-open="'+c.id+'"><span class="hl" style="display:block;font-family:var(--serif);font-size:1.02rem;line-height:1.3;margin:0 0 4px">'+esc(c.lead.title)+'</span>'
+      + '<span class="meta"><span class="src">'+esc(c.lead.source)+'</span><span>'+fmtTime(c.first)+'</span>'+cov(c)+'</span></button>').join("")+'</div></div></section>';
+}
+function topicCard(id, n, r){
+  const top = r.filter(c => c.cats.includes(id)).slice(0,2);
+  return '<div class="card topic"><button class="th" data-cat="'+id+'"><b>'+esc(catLabel(id))+'</b><span>'+n+'</span></button><ul>'
+    + top.map(c => '<li><button data-open="'+c.id+'">'+esc(c.lead.title)+'</button></li>').join("")
+    + '</ul><button class="all" data-cat="'+id+'">View all '+n+' \u2192</button></div>';
+}
+function topicsOverview(full){
+  const n = counts(), r = ranked(); if(!r.length) return "";
+  const prim = PRIMARY.concat(stateName() ? ["state"] : []).filter(id => n[id]);
+  const sec = CATS.filter(c => !["top","state","sports","entertainment"].includes(c.id) && !PRIMARY.includes(c.id) && n[c.id]);
+  const cards = (full ? prim.concat(sec.map(c => c.id)) : prim).map(id => topicCard(id, n[id], r)).join("");
+  return '<section class="sec" aria-labelledby="topics-h"><div class="sec-h"><h2 id="topics-h">'+(full ? "All topics" : "Topics")+'</h2></div><div class="topics-grid">'+cards+'</div>'
+    + (!full && sec.length ? '<div class="topic-more"><span class="kpi-note" style="margin-right:6px">More topics:</span> '+sec.map(c => '<button class="chip" data-cat="'+c.id+'" style="margin:4px 4px 0 0">'+esc(c.label)+' <span style="opacity:.7">'+n[c.id]+'</span></button>').join("")+'</div>' : "")
+    + '</section>';
+}
+function whatHappened(){
+  const cs = view.clusters; if(!cs.length) return "";
+  const used = new Set(), take = arr => { const out = arr.filter(c => !used.has(c.id)).slice(0,3); out.forEach(c => used.add(c.id)); return out; };
+  let groups;
+  if(isToday()){
+    const cut = Date.now()-3*3600e3;
+    const fresh = view.newLinks ? cs.filter(c => c.reports.some(r => view.newLinks.has(r.link))).sort((a,b) => b.outlets-a.outlets) : [];
+    const sinceVisit = view.lastVisit ? take(cs.filter(c => c.first > view.lastVisit).sort((a,b) => b.outlets-a.outlets || b.first-a.first)) : [];
+    groups = sinceVisit.length ? [["Since your last visit ("+ago(view.lastVisit)+")", sinceVisit]] : [];
+    groups = groups.concat([["New since last refresh", take(fresh)],
+              ["New in the last 3 hours", take(cs.filter(c => c.first>=cut).sort((a,b) => b.outlets-a.outlets || b.first-a.first))],
+              ["Major updates", take(cs.filter(c => c.outlets>=3 && c.last>=cut && c.first<cut).sort((a,b) => b.outlets-a.outlets))],
+              ["Continuing stories", take(cs.filter(c => c.last-c.first >= 6*3600e3).sort((a,b) => b.outlets-a.outlets))]]);
+  } else {
+    groups = [["Major developments", take(cs.filter(c => c.indep>=2).sort((a,b) => b.indep-a.indep || b.outlets-a.outlets))],
+              ["Most covered", take(cs.slice().sort((a,b) => b.outlets-a.outlets).filter(c => c.outlets>=2))],
+              ["Developed through the day", take(cs.filter(c => c.last-c.first >= 6*3600e3).sort((a,b) => b.outlets-a.outlets))]];
+  }
+  groups = groups.filter(g => g[1].length); if(!groups.length) return "";
+  return '<section class="sec" aria-labelledby="wh-h"><div class="sec-h"><h2 id="wh-h">'+(isToday() ? "What changed" : "What happened")+'</h2></div><div class="wh">'
+    + groups.map(([h, arr]) => '<div class="card"><h3>'+h+'</h3><ul>'+arr.map(c => '<li><button data-open="'+c.id+'">'+esc(c.lead.title)
+      + '<small>'+esc(c.lead.source)+' \u00b7 '+fmtTime(c.first)+(c.last-c.first>=3600e3 ? '\u2013'+fmtTime(c.last) : '')+' IST \u00b7 '+c.outlets+' outlet'+(c.outlets>1?"s":"")+'</small></button></li>').join("")+'</ul></div>').join("")
+    + '</div></section>';
+}
+function catBar(){
+  const n = counts(), ids = ["top"].concat(PRIMARY, stateName() ? ["state"] : [], CATS.map(c => c.id).filter(id => !PRIMARY.includes(id) && !["top","state"].includes(id)));
+  return '<div class="catbar" role="toolbar" aria-label="Topics">'+ids.filter(id => id==="top" || n[id]).map(id =>
+    '<button class="chip" data-cat="'+id+'" aria-pressed="'+(view.cat===id)+'">'+esc(id==="top" ? "Top stories" : catLabel(id))+'<span>'+(id==="top" ? Math.min(30, view.clusters.length) : n[id])+'</span></button>').join("")+'</div>';
+}
+function catPage(){
+  let rows = ranked();
+  if(view.cat==="top") rows = rows.slice(0,30); else rows = rows.filter(c => c.cats.includes(view.cat));
+  const srcCount = {}; rows.forEach(c => c.reports.forEach(r => srcCount[r.source] = (srcCount[r.source]||0)+1));
+  const srcs = Object.keys(srcCount).sort((x,y) => srcCount[y]-srcCount[x] || x.localeCompare(y));
+  if(view.src && !srcCount[view.src]) view.src = "";
+  if(view.src) rows = rows.filter(c => c.reports.some(r => r.source===view.src));
+  if(view.cover==="multi") rows = rows.filter(c => c.outlets>1); else if(view.cover==="single") rows = rows.filter(c => c.outlets===1);
+  if(view.sort==="latest") rows = rows.slice().sort((a,b) => b.first-a.first);
+  const shown = rows.slice(0, view.limit);
+  const filters = '<div class="filters"><label for="srcf" class="sr">Filter by outlet</label><select id="srcf"><option value="">All outlets ('+srcs.length+')</option>'
+    + srcs.map(s => '<option'+(s===view.src ? " selected" : "")+' value="'+esc(s)+'">'+esc(s)+' ('+srcCount[s]+')</option>').join("")+'</select>'
+    + '<div class="seg" role="group" aria-label="Coverage">'+[["all","All"],["multi","Multi-source"],["single","Single-source"]].map(([k,l]) => '<button data-cover="'+k+'" aria-pressed="'+(view.cover===k)+'">'+l+'</button>').join("")+'</div></div>';
+  return '<div class="page-h"><h1>'+esc(view.cat==="top" ? "Top stories" : catLabel(view.cat))+'</h1><span class="sub">'+rows.length+' stor'+(rows.length===1?"y":"ies")+'</span></div>'
+    + catBar() + filters
+    + '<div class="toolrow"><span class="kpi-note" style="margin:0">'+(view.cat==="top" ? "Ranked by independent coverage and breadth" : "")+'</span><div class="seg" role="group" aria-label="Order">'
+    + '<button data-sort="top" aria-pressed="'+(view.sort==="top")+'">Top</button><button data-sort="latest" aria-pressed="'+(view.sort==="latest")+'">Latest</button></div></div>'
+    + (shown.length ? '<ul class="feed">'+shown.map(rowHtml).join("")+'</ul>' : '<div class="empty"><b>No stories match.</b>'+(view.src || view.cover!=="all" ? "Try All outlets or All coverage." : "Nothing was reported under this topic on this day.")+'</div>')
+    + (rows.length > view.limit ? '<button class="btn sec2 showmore" id="showmore">Show '+Math.min(40, rows.length-view.limit)+' more</button>' : '');
+}
+function timelinePage(){
+  const rows = view.clusters.slice().sort((a,b) => a.first-b.first);
+  let h = '', hour = null;
+  rows.forEach(c => { const hh = fmtHour(c.first); if(hh!==hour){ if(hour!==null) h += '</ul>'; h += '<h3>'+hh+'</h3><ul class="feed">'; hour = hh; } h += rowHtml(c); });
+  if(hour!==null) h += '</ul>';
+  return '<div class="page-h"><h1>Daily timeline</h1><span class="sub">'+rows.length+' stories \u00b7 first report time, IST</span></div>'
+    + (rows.length ? '<div class="tl">'+h+'</div>' : '<div class="empty"><b>No stories yet.</b>Load a date to see its timeline.</div>');
+}
+function archivePage(){
+  const r = store.get("news:recent") || [];
+  view.calMonth = view.calMonth || (view.date || todayIST()).slice(0,7);
+  return '<div class="page-h"><h1>News archive</h1><span class="sub">Any past day, in IST</span></div>'
+    + '<div class="card" style="padding:16px;max-width:420px" id="archcal">'+calHtml(view.calMonth)+'</div>'
+    + (r.length ? '<section class="sec" style="margin-top:22px"><div class="sec-h"><h2>Recently viewed</h2></div><div>'+r.map(d => '<button class="chip" data-pick="'+d+'" style="margin:0 6px 6px 0">'+esc(shortDate(d))+'</button>').join("")+'</div></section>' : '');
+}
+function savedPage(){
+  const s = store.get("news:saved") || [];
+  return '<div class="page-h"><h1>Saved stories</h1><span class="sub">'+s.length+' saved on this device</span></div>'
+    + (s.length ? '<ul class="feed">'+s.map((x, i) => '<li style="display:flex;gap:10px;align-items:flex-start;padding:14px 4px;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0">'
+      + '<a href="'+esc(safeUrl(x.link))+'" target="_blank" rel="noopener noreferrer" class="hl" style="display:block;font-family:var(--serif);font-size:1.05rem;line-height:1.3;text-decoration:none">'+esc(x.title)+'</a>'
+      + '<span class="meta"><span class="src">'+esc(x.source)+'</span><span>'+esc(shortDate(x.date))+', '+fmtTime(x.ts)+' IST</span></span></div>'
+      + '<button class="iconbtn" data-unsave="'+i+'" aria-label="Remove from saved">'+icon("i-x")+'</button></li>').join("")+'</ul>'
+      : '<div class="empty"><b>Nothing saved yet.</b>Open any story and tap Save to keep it here.</div>');
+}
+const foot = '<p class="foot">Comprehensive coverage from available sources: headlines, outlets and times come from Google News, which lists established publishers. This app never writes its own summaries. \u201cCovered by N outlets\u201d counts distinct publishers; identical wording from several outlets is flagged as a likely wire copy, since repetition is not independent confirmation. All dates and times are IST.</p>';
+
+function renderContent(){
+  const el = $("content"), p = view.page;
+  let h = "";
+  if(p==="archive") h = archivePage();
+  else if(p==="saved") h = savedPage();
+  else if(!view.date) h = buildPanel() || '<div class="empty"><b>Loading today\u2019s news\u2026</b></div>';
+  else {
+    h = buildPanel() + warnPanel();
+    if(!view.clusters.length && !view.loading) h += emptyPanel();
+    else if(p==="home") h += briefing() + kpis() + topStories() + whatHappened() + watchlist() + topicsOverview(false);
+    else if(p==="topics") h += topicsOverview(true);
+    else if(p==="cat") h += catPage();
+    else if(p==="timeline") h += timelinePage();
+    if(view.clusters.length) h += foot;
+  }
+  el.innerHTML = h;
+}
+function render(){ renderHeader(); renderNav(); renderContent(); syncHash(); }
+let rTimer = null;
+function renderSoon(){ if(!rTimer) rTimer = setTimeout(() => { rTimer = null; render(); }, 280); }
+
+/* ================= navigation ================= */
+function go(page, opts){
+  opts = opts || {};
+  view.page = page; if(opts.cat) view.cat = opts.cat; view.limit = 40;
+  closeNav(); render();
+  if(opts.anchor){ const a = $(opts.anchor); if(a) a.scrollIntoView({block:"start"}); } else window.scrollTo(0,0);
+}
+function syncHash(){
+  const parts = []; if(view.date) parts.push("d="+view.date); if(view.page!=="home") parts.push("p="+view.page); if(view.page==="cat") parts.push("c="+view.cat);
+  const h = parts.length ? "#"+parts.join("&") : " ";
+  if(location.hash!==h.trim()) history.replaceState(null, "", h.trim() || location.pathname);
+}
+function openNav(){ document.body.classList.add("navopen"); $("menu").setAttribute("aria-expanded","true"); $("layer").innerHTML = '<div class="scrim" id="navscrim"></div>'; }
+function closeNav(){ if(!document.body.classList.contains("navopen")) return; document.body.classList.remove("navopen"); $("menu").setAttribute("aria-expanded","false"); $("layer").innerHTML = ""; }
+
+/* ================= story drawer ================= */
+let lastFocus = null;
+function openDetail(id){
+  const c = byId(id); if(!c) return;
+  lastFocus = document.activeElement;
+  const saved = (store.get("news:saved")||[]).some(x => x.link===c.lead.link);
+  const rel = related(c, view.clusters);
+  const rel0 = isToday() && ago(c.first) ? " ("+ago(c.first)+")" : "";
+  $("layer").innerHTML = '<div class="scrim" id="dscrim"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="d-title">'
+    + '<div class="drawer-h"><span class="kpi-note" style="margin:0">'+esc(catLabel(primaryCat(c)))+'</span><button class="iconbtn" id="dclose" aria-label="Close">'+icon("i-x")+'</button></div>'
+    + '<div class="drawer-b"><h2 id="d-title">'+esc(c.lead.title)+'</h2>'
+    + '<dl class="facts"><dt>Published</dt><dd>'+esc(shortDate(view.date))+' \u00b7 '+fmtTime(c.first)+' IST'+rel0+'</dd>'
+    + '<dt>Source</dt><dd>'+esc(c.lead.source)+'</dd><dt>Coverage</dt><dd>'+cov(c)+(c.indep<c.outlets && c.outlets>1 ? ' <span class="kpi-note">('+c.indep+' distinct wording'+(c.indep>1?"s":"")+')</span>' : '')+'</dd>'
+    + '<dt>Topics</dt><dd>'+esc(c.cats.filter(x => x!=="misc").map(catLabel).join(", ") || "Other")+'</dd>'
+    + (c.ents.size ? '<dt>Mentions</dt><dd class="entchips">'+[...c.ents].slice(0,6).map(e => '<button class="chip" data-watchq="'+esc(e)+'" style="margin:0 4px 4px 0;text-transform:capitalize">'+esc(e)+'</button>').join("")+'</dd>' : '')
+    + '</dl>'
+    + '<div class="dact"><a class="btn pri" href="'+esc(safeUrl(c.lead.link))+'" target="_blank" rel="noopener noreferrer">Read original '+icon("i-ext")+'</a>'
+    + '<button class="btn sec2" id="dshare" data-id="'+c.id+'">'+icon("i-share")+' Share</button>'
+    + '<button class="btn sec2" id="dsave" data-id="'+c.id+'" aria-pressed="'+saved+'">'+icon("i-bm")+' '+(saved ? "Saved" : "Save")+'</button></div>'
+    + '<h3>Coverage \u00b7 '+c.outlets+' outlet'+(c.outlets>1?"s":"")+'</h3>'
+    + (c.identical>1 ? '<p class="wire">'+c.identical+' outlets carry identical wording \u2014 likely one wire story republished, not separate confirmation.</p>' : '')
+    + '<ul class="covlist">'+c.reports.map(r => '<li><a href="'+esc(safeUrl(r.link))+'" target="_blank" rel="noopener noreferrer">'+esc(r.source)+'</a> <span class="kpi-note">'+fmtTime(r.ts)+' IST</span><span class="tt">'+esc(r.title)+'</span></li>').join("")+'</ul>'
+    + '<h3>Related coverage</h3>'+(rel.length ? '<ul class="covlist">'+rel.map(o => '<li><button data-open="'+o.id+'" style="text-align:left"><span class="tt" style="margin:0">'+esc(o.lead.title)+'</span></button><span class="kpi-note">'+esc(o.lead.source)+' \u00b7 '+fmtTime(o.first)+' IST</span></li>').join("")+'</ul>'
+      : '<p class="kpi-note">No separate related stories found for this day.</p>')
+    + '</div></aside>';
+  $("dclose").focus();
+}
+function closeDetail(){ $("layer").innerHTML = ""; if(lastFocus && document.contains(lastFocus)) lastFocus.focus(); }
+function openAbout(){
+  lastFocus = document.activeElement;
+  $("layer").innerHTML = '<div class="scrim" id="dscrim"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="d-title"><div class="drawer-h"><span></span><button class="iconbtn" id="dclose" aria-label="Close">'+icon("i-x")+'</button></div>'
+    + '<div class="drawer-b"><h2 id="d-title">About the data</h2><p>News comes from Google News searches restricted to the chosen day, then filtered to the exact IST day (00:00\u201323:59). Stories are grouped when several outlets report the same event.</p>'
+    + '<p>The app shows publishers\u2019 own headlines, times and links. It never writes summaries or claims a story is \u201cverified\u201d; coverage counts describe how many outlets reported it.</p>'
+    + '<p>Coverage is what the feeds return for that day. It is broad, not a guarantee of every story published. Very old dates may return fewer stories.</p>'
+    + '<p class="kpi-note">Days you load are saved on this device (the 12 most recent), so revisiting them is instant.</p></div></aside>';
+  $("dclose").focus();
+}
+
+/* ================= command search ================= */
+let cmdSel = 0;
+function openSearch(){
+  closeNav(); lastFocus = document.activeElement;
+  $("layer").innerHTML = '<div class="cmdwrap" id="cmdwrap"><div class="cmd" role="dialog" aria-modal="true" aria-label="Search news">'
+    + '<div class="in">'+icon("i-search")+'<label for="cmdq" class="sr">Search news</label><input id="cmdq" placeholder="Search headlines, outlets, topics" autocomplete="off"><button class="iconbtn" id="cmdclose" aria-label="Close search">'+icon("i-x")+'</button></div>'
+    + '<div class="res" id="cmdres" role="listbox"></div></div></div>';
+  $("cmdq").focus(); searchResults("");
+}
+function searchResults(q){
+  const box = $("cmdres"); if(!box) return;
+  q = q.trim().toLowerCase(); cmdSel = 0;
+  if(!view.clusters.length){ box.innerHTML = '<p class="hint">Load a date first; search looks through that day\u2019s stories.</p>'; return; }
+  if(!q){ box.innerHTML = '<p class="hint">Try:<br>'+["RBI","Sensex","ISRO","Cricket","AI"].map(s => '<button class="chip" data-q="'+s+'">'+s+'</button>').join("")+'</p>'; return; }
+  const res = ranked().filter(c => matches(c, q)).slice(0,30);
+  box.innerHTML = '<p class="hint" style="padding:6px 12px 2px">'+res.length+(res.length===30 ? "+" : "")+(res.length===1 ? ' story matches \u2018' : ' stories match \u2018')+esc(q)+'\u2019</p>'
+    + res.map((c, i) => '<button role="option" data-open="'+c.id+'" class="'+(i===0 ? "on" : "")+'"><b>'+esc(c.lead.title)+'</b><span class="meta"><span class="src">'+esc(c.lead.source)+'</span><span>'+fmtTime(c.first)+'</span><span>'+esc(catLabel(primaryCat(c)))+'</span></span></button>').join("");
+}
+function closeSearch(){ $("layer").innerHTML = ""; if(lastFocus && document.contains(lastFocus)) lastFocus.focus(); }
+
+/* ================= data orchestration ================= */
+function remember(d){ const r = (store.get("news:recent") || []).filter(x => x!==d); r.unshift(d); store.set("news:recent", r.slice(0,10)); }
+function setDate(d){
+  if(!d) return; if(d > todayIST()) d = todayIST();
+  if(view.page==="archive" || view.page==="saved") view.page = "home";
+  closePop(); getNews({ date:d });
+}
+// A report counts only if it is on the chosen IST day AND not stamped in the future (bad feed data / clock skew).
+const onDayOf = d => x => istDate(new Date(x.ts))===d && x.ts <= Date.now() + 10*60e3;
+// Runs feeds tier by tier (core first) with a small worker pool. onFeed fires after every section.
+async function runFeeds(feeds, d, signal, onFeed, workers){
+  const out = [], failed = [], codes = []; let okCount = 0, stop = false;
+  for(const tier of [1, 2]){
+    const queue = feeds.filter(f => (f.tier||2)===tier);
+    const n = Math.min(queue.length, workers[tier-1]);
+    await Promise.all(Array.from({ length:n }, async () => {
+      while(queue.length && !signal.aborted && !stop){
+        const f = queue.shift();
+        try{ const got = parseFeed(await fetchFeed(feedUrl(f, d), signal), f.id); out.push(...got); okCount++; onFeed(f, "ok", got); }
+        catch(err){
+          if(signal.aborted) return; failed.push(f.id); codes.push(err.code); onFeed(f, "fail");
+          if(!okCount && failed.length >= 3) stop = true;       // nothing is getting through: stop early and explain
+        }
+      }
+    }));
+    if(signal.aborted) break;
+    if(stop) break;
+  }
+  if(stop) feeds.forEach(f => { if(!failed.includes(f.id) && !out.some(x => x.feed===f.id)){ failed.push(f.id); onFeed(f, "fail"); } });
+  return { out, failed, codes, stopped: stop };
+}
+function applyData(items, failed, at){
+  view.items = items; view.failed = failed; view.at = at;
+  view.clusters = cluster(items, stateName());
+}
+async function getNews(opts){
+  opts = opts || {};
+  const d = opts.date || view.date; if(!d || d > todayIST()) return;
+  if(view.ctrl) view.ctrl.abort();
+  if(view.prefetchCtrl){ view.prefetchCtrl.abort(); view.prefetchCtrl = null; }
+  const token = ++view.token, ctrl = new AbortController(); view.ctrl = ctrl;
+  const retryOnly = !!opts.retryFailed && view.failed.length && d===view.date;
+  const sameDay = d===view.date;
+  if(!sameDay){
+    view.limit = 40; view.src = ""; view.pending = null; view.newLinks = null;
+    view.lastVisit = store.get("news:lastvisit:"+d);         // when this date was last opened, before we overwrite it
+    store.set("news:lastvisit:"+d, Date.now());
+  }
+  view.date = d; view.empty = null; view.offline = false; remember(d);
+  const cached = await packs.get(cacheKey(d));
+
+  // 1. Cache first: anything saved is shown immediately.
+  if(cached && !retryOnly && (!sameDay || !view.items.length)){
+    applyData(cached.items, cached.failed||[], cached.at); view.loading = false; view.stat = {};
+  }
+  if(!retryOnly && cached && !opts.force && cacheFresh(cached, d)){ view.refreshing = false; render(); announce(view.clusters.length+" stories"); schedulePrefetch(d, token); return; }
+
+  // 2. Offline: keep whatever is saved on screen.
+  if(!navigator.onLine){
+    view.refreshing = false; view.loading = false;
+    if(cached){ view.offline = true; } else { view.items = []; view.clusters = []; view.empty = { title:"You\u2019re offline.", text:"There\u2019s no saved copy of this day yet. Connect to the internet and it will load automatically." }; }
+    render(); return;
+  }
+
+  // 3a. Saved copy on screen: refresh silently in the background, offer "N new reports".
+  const feeds = retryOnly ? feedsFor().filter(f => view.failed.includes(f.id)) : feedsFor();
+  if(cached && !retryOnly){
+    view.refreshing = true; render();
+    const res = await runFeeds(feeds, d, ctrl.signal, () => {}, [3, 2]);
+    if(token!==view.token) return;
+    view.refreshing = false;
+    const fresh = dedupeReports(res.out.filter(onDayOf(d)));
+    if(!fresh.length){ view.note = res.codes.length ? "Couldn\u2019t refresh just now; showing saved news." : ""; render(); schedulePrefetch(d, token); return; }
+    const merged = dedupeReports(fresh.concat(view.items));       // never lose a report a failed section had earlier
+    const known = new Set(view.items.map(x => x.link));
+    const added = merged.filter(x => !known.has(x.link));
+    const at = Date.now();
+    await packs.set(cacheKey(d), { at, items:merged, failed:res.failed });
+    if(added.length && view.items.length){ view.pending = { items:merged, failed:res.failed, at, links:new Set(added.map(x => x.link)) }; view.at = at; render(); showPill(added.length); }
+    else { applyData(merged, res.failed, at); render(); }
+    schedulePrefetch(d, token); return;
+  }
+
+  // 3b. Nothing saved: build progressively, core topics first.
+  const stat = {};
+  feedsFor().forEach(f => stat[f.id] = { label:f.label, tier:f.tier||2, s: retryOnly && !view.failed.includes(f.id) ? "ok" : "wait" });
+  const base = retryOnly ? view.items.slice() : [];
+  Object.assign(view, { loading:true, refreshing:false, stat, codes:[] });
+  if(!retryOnly){ view.items = []; view.clusters = []; view.failed = []; }
+  render();
+  const collected = [];
+  const res = await runFeeds(feeds, d, ctrl.signal, (f, s, got) => {
+    stat[f.id].s = s;
+    if(token!==view.token) return;
+    if(got && got.length){                 // show each section's stories the moment it arrives
+      collected.push(...got);
+      view.items = dedupeReports(base.concat(collected.filter(onDayOf(d)))); view.clusters = cluster(view.items, stateName());
+    }
+    renderSoon();
+  }, [3, 2]);
+  if(token!==view.token) return;
+  clearTimeout(rTimer); rTimer = null;
+  const items = dedupeReports(base.concat(collected.filter(onDayOf(d))));
+  view.loading = false; view.codes = res.codes;
+  applyData(items, retryOnly ? view.failed.filter(id => res.failed.includes(id)) : res.failed, Date.now());
+  if(!view.clusters.length){
+    const total = feedsFor().length, allFailed = view.failed.length===total, rate = res.codes.some(c => c==="rate");
+    view.empty = allFailed
+      ? (rate ? { title:"The free news relays are busy right now.", text:"They\u2019re limiting requests from your connection. The app now waits and retries politely; for reliable loading, set up your own free relay (about 2 minutes, no cost).", relay:true }
+              : { title:"News couldn\u2019t be reached.", text:"None of the connection routes answered. Check your connection and retry, or set up your own free relay for reliable loading.", relay:true })
+      : { title:"No stories found for this date.", text:"The feeds returned nothing published on this IST day. Very old dates may be outside what the source keeps." };
+  } else await saveCache(d);
+  render();
+  if(!view.clusters.length && view.empty && view.empty.relay) setTimeout(runDiag, 50);
+  announce(view.clusters.length ? view.items.length+" reports, "+view.clusters.length+" unique stories" : view.empty.title);
+  if(view.clusters.length) schedulePrefetch(d, token);
+}
+// Previous day loads quietly after the current one finishes, so "‹" feels instant. One day only, one request at a time.
+function schedulePrefetch(d, token){
+  setTimeout(async () => {
+    if(token!==view.token || document.visibilityState!=="visible" || !navigator.onLine) return;
+    const prev = shiftDay(d, -1), c = await packs.get(cacheKey(prev));
+    if(c && cacheFresh(c, prev)) return;
+    if(token!==view.token) return;
+    const ctrl = new AbortController(); view.prefetchCtrl = ctrl;
+    const res = await runFeeds(feedsFor(), prev, ctrl.signal, () => {}, [2, 2]).catch(() => null);
+    if(!res || ctrl.signal.aborted) return;
+    const items = dedupeReports(res.out.filter(onDayOf(prev)));
+    if(items.length) await packs.set(cacheKey(prev), { at:Date.now(), items, failed:res.failed });
+    if(view.prefetchCtrl===ctrl) view.prefetchCtrl = null;
+  }, 2500);
+}
+function showPill(n){
+  let p = $("pill");
+  if(!p){ p = document.createElement("div"); p.id = "pill"; p.className = "pill"; document.body.appendChild(p); }
+  p.innerHTML = '<span>'+n+' new report'+(n>1?"s":"")+'</span><button id="apply-upd">View updates</button><button class="iconbtn" id="dismiss-upd" aria-label="Dismiss" style="width:30px;height:30px">'+icon("i-x")+'</button>';
+  p.hidden = false; announce(n+" new reports available");
+}
+function hidePill(){ const p = $("pill"); if(p) p.hidden = true; }
+function applyPending(){
+  const pd = view.pending; if(!pd) return;
+  view.newLinks = pd.links; applyData(pd.items, pd.failed, pd.at); view.pending = null; hidePill(); render(); window.scrollTo(0,0);
+}
+async function runDiag(){
+  const out = $("diag"), btn = $("diag-run") || { set disabled(v){}, set textContent(v){} }; if(!out) return;
+  btn.disabled = true; btn.textContent = "Testing\u2026";
+  const lines = ["Page opened via: "+location.protocol+" | online: "+navigator.onLine+" | "+navigator.userAgent.split(")")[0].split("(")[1]];
+  out.innerHTML = '<li>'+esc(lines[0])+'</li>';
+  const url = feedUrl(FEEDS[0], todayIST());
+  for(const r of ROUTES.filter(x => !x.when || x.when())){
+    const li = document.createElement("li"); li.textContent = r.id+": testing\u2026"; out.appendChild(li);
+    const t0 = performance.now(), ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 10000);
+    let msg;
+    if(r.jsonp){
+      try{ const data = await jsonp(cb => r.make(url, cb), 10000, ctrl.signal); const n = ((data && data.contents) || "").split("<item").length - 1;
+           msg = n ? "OK \u2014 news received ("+n+" items, "+Math.round(performance.now()-t0)+" ms)" : "answered but no news"+(data && data.status ? " (source HTTP "+data.status.http_code+")" : ""); }
+      catch(e){ msg = e.message==="script blocked" ? "blocked before reaching the server" : "no answer in 10 s"; }
+      clearTimeout(timer); li.textContent = r.id+": "+msg; lines.push(li.textContent); continue;
+    }
+    try{
+      const res = await fetch(r.make(url), { signal: ctrl.signal });
+      const body = await res.text();
+      const n = (body.match(/<item/g) || []).length || ((/"items"\s*:\s*\[/.test(body)) ? "JSON" : 0);
+      msg = res.ok ? (n ? "OK \u2014 news received ("+n+" items, "+Math.round(performance.now()-t0)+" ms)" : "answered but no news (HTTP "+res.status+")") : "refused \u2014 HTTP "+res.status+(res.status===429 ? " (rate limit)" : res.status===403 ? " (forbidden)" : "");
+    }catch(e){ msg = e.name==="AbortError" ? "no answer in 10 s" : "blocked before reaching the server ("+e.name+": "+e.message+")"; }
+    clearTimeout(timer);
+    li.textContent = r.id+": "+msg; lines.push(li.textContent);
+  }
+  btn.disabled = false; btn.textContent = "Test again";
+  $("diag-copy").hidden = false; $("diag-copy").dataset.txt = lines.join("\n");
+}
+function openConn(){
+  lastFocus = document.activeElement; closeNav();
+  const cur = store.get("news:relay") || "", now = Date.now();
+  const rows = ROUTES.filter(r => r.id!=="custom" || cur).map(r => { const h = health[r.id]||{};
+    const st = h.until>now ? "resting "+Math.ceil((h.until-now)/1000)+" s" : h.ok ? "worked "+fmtTime(h.ok) : "untested";
+    return '<li><b>'+r.id+'</b> <span class="kpi-note">'+st+'</span></li>'; }).join("");
+  const worker = 'export default {\n  async fetch(req) {\n    const target = new URL(req.url).searchParams.get("url");\n    if (!target || !target.startsWith("https://news.google.com/")) return new Response("Bad request", { status: 400 });\n    const r = await fetch(target, { headers: { "User-Agent": "Mozilla/5.0" }, cf: { cacheTtl: 300 } });\n    return new Response(r.body, { status: r.status, headers: {\n      "Content-Type": "application/rss+xml; charset=utf-8",\n      "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=300" } });\n  }\n};';
+  $("layer").innerHTML = '<div class="scrim" id="dscrim"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="d-title"><div class="drawer-h"><span class="kpi-note" style="margin:0">Settings</span><button class="iconbtn" id="dclose" aria-label="Close">'+icon("i-x")+'</button></div>'
+    + '<div class="drawer-b"><h2 id="d-title">Connection</h2><p>Your browser can\u2019t read Google News directly, so the app uses free public relays. They\u2019re shared by many people and sometimes limit requests.</p>'
+    + '<h3>Most reliable: your own free relay</h3><ol class="steps"><li>Sign up free at <b>dash.cloudflare.com</b> \u2192 Workers &amp; Pages \u2192 Create \u2192 Worker.</li><li>Replace its code with the code below, then Deploy.</li><li>Paste your worker address here, ending in <code>/?url=</code></li></ol>'
+    + '<div class="relayrow"><label for="relay-in" class="sr">Your relay address</label><input id="relay-in" placeholder="https://your-name.workers.dev/?url=" value="'+esc(cur)+'"><button class="btn pri" id="relay-save">Save</button>'+(cur ? '<button class="btn sec2" id="relay-clear">Remove</button>' : '')+'</div>'
+    + '<p class="kpi-note" id="relay-msg"></p>'
+    + '<pre class="code" id="worker-code">'+esc(worker)+'</pre><button class="btn sec2" id="copy-worker">Copy code</button>'
+    + '<h3>Performance</h3><ul class="covlist">'+perf.report().map(([l,v]) => '<li><b>'+esc(l)+'</b> <span class="kpi-note">'+v+' ms</span></li>').join("")+'<li><b>Cache</b> <span class="kpi-note">'+packs.keys().length+' day'+(packs.keys().length===1?"":"s")+' saved \u00b7 '+("indexedDB" in window ? "IndexedDB" : "localStorage fallback")+'</span></li></ul>'
+    + '<h3>Test from this phone</h3><p class="kpi-note">Checks every route once and shows exactly what happens.</p><button class="btn pri" id="diag-run">Test connection</button> <button class="btn sec2" id="diag-copy" hidden>Copy results</button><ul class="covlist" id="diag"></ul>'
+    + '<h3>Route status</h3><ul class="covlist">'+rows+'</ul>'
+    + '<p class="kpi-note">Inside an Android APK built with CapacitorHttp enabled, the app reads Google News directly and needs no relay.</p></div></aside>';
+  $("dclose").focus();
+}
+/* ================= theme, collapse, state ================= */
+function applyTheme(t){
+  document.documentElement.dataset.theme = t;
+  const next = t==="dark" ? "Light mode" : "Dark mode", ic = t==="dark" ? "i-sun" : "i-moon";
+  $("theme").innerHTML = icon(ic); $("theme").setAttribute("aria-label","Switch to "+next.toLowerCase());
+  $("theme-side").innerHTML = icon(ic)+'<span class="lbl">'+next+'</span>';
+}
+function toggleTheme(){ const t = document.documentElement.dataset.theme==="dark" ? "light" : "dark"; store.set("news:theme", t); applyTheme(t); }
+
+
+
+/* ================= wiring ================= */
+$("state").innerHTML = '<option value="">No state section</option>' + STATES.map(s => '<option>'+s+'</option>').join("");
+$("state").value = store.get("news:state") || "";
+$("state").addEventListener("change", () => { store.set("news:state", stateName()); if(view.cat==="state" && !stateName()) view.cat = "top"; if(view.date) getNews(); else renderNav(); });
+applyTheme(store.get("news:theme") || "dark");
+if(store.get("news:collapsed")) document.body.classList.add("collapsed");
+
+$("prev").addEventListener("click", () => setDate(shiftDay(view.date || todayIST(), -1)));
+$("next").addEventListener("click", () => setDate(shiftDay(view.date || todayIST(), 1)));
+$("todaybtn").addEventListener("click", () => setDate(todayIST()));
+$("datebtn").addEventListener("click", () => $("pop").hidden ? openPop() : closePop());
+$("refresh").addEventListener("click", () => view.date && getNews({ force:true }));
+$("searchbtn").addEventListener("click", openSearch);
+$("theme").addEventListener("click", toggleTheme);
+$("theme-side").addEventListener("click", toggleTheme);
+$("about").addEventListener("click", () => { closeNav(); openAbout(); });
+$("collapse").addEventListener("click", () => { document.body.classList.toggle("collapsed"); store.set("news:collapsed", document.body.classList.contains("collapsed")); });
+$("menu").addEventListener("click", () => document.body.classList.contains("navopen") ? closeNav() : openNav());
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("button, [data-pick]");
+  if(!e.target.closest("#pop") && !e.target.closest("#datebtn") && !$("pop").hidden) closePop();
+  if(e.target.id==="navscrim"){ closeNav(); return; }
+  if(e.target.id==="dscrim" || e.target.closest("#dclose")){ closeDetail(); return; }
+  if(e.target.id==="cmdwrap" || e.target.closest("#cmdclose")){ closeSearch(); return; }
+  if(!b) return;
+  const ds = b.dataset;
+  if(ds.pick){ setDate(ds.pick); return; }
+  if(ds.cal){
+    view.calMonth = ds.cal;
+    const host = b.closest("#popcal") || b.closest("#archcal"); if(host){ host.innerHTML = calHtml(ds.cal); const f = host.querySelector("[data-cal]"); if(f) f.focus(); }
+    return;
+  }
+  if(ds.open!==undefined){ if($("cmdwrap")) closeSearch(); openDetail(+ds.open); return; }
+  if(ds.cat){ if(ds.cat!==view.cat) view.src = ""; go("cat", { cat:ds.cat }); return; }
+  if(ds.page){ if(ds.page==="topics" && window.matchMedia("(max-width:767px)").matches){ go("topics"); return; } go(ds.page, { anchor: ds.anchor }); return; }
+  if(ds.sort){ view.sort = ds.sort; view.limit = 40; renderContent(); return; }
+  if(ds.q){ $("cmdq").value = ds.q; searchResults(ds.q); return; }
+  if(ds.watch){ addWatch(ds.watch); return; }
+  if(ds.unwatch!==undefined){ const w = store.get("news:watch")||[]; w.splice(+ds.unwatch,1); store.set("news:watch", w); renderContent(); return; }
+  if(ds.watchq){ openSearch(); $("cmdq").value = ds.watchq; searchResults(ds.watchq); return; }
+  if(ds.cover){ view.cover = ds.cover; view.limit = 40; renderContent(); return; }
+  if(ds.unsave!==undefined){ const s = store.get("news:saved")||[]; s.splice(+ds.unsave, 1); store.set("news:saved", s); render(); return; }
+  switch(b.id){
+    case "choose": openPop(); break;
+    case "nav-search": openSearch(); break;
+    case "nav-conn": case "open-conn": openConn(); break;
+    case "apply-upd": applyPending(); break;
+    case "dismiss-upd": hidePill(); break;
+    case "copy-worker": navigator.clipboard && navigator.clipboard.writeText($("worker-code").textContent).then(() => { b.textContent = "Copied"; }).catch(() => {}); break;
+    case "relay-save": {
+      const v = $("relay-in").value.trim();
+      if(!/^https:\/\/[^\s]+$/i.test(v)){ $("relay-msg").textContent = "Enter an https:// address, ending in /?url="; break; }
+      store.set("news:relay", v); delete health.custom; saveHealth(); $("relay-msg").textContent = "Saved. Loading news through your relay\u2026";
+      setTimeout(() => { closeDetail(); getNews({ force:true }); }, 500); break;
+    }
+    case "diag-run": runDiag(); break;
+    case "diag-copy": navigator.clipboard && navigator.clipboard.writeText(b.dataset.txt||"").then(() => { b.textContent = "Copied \u2014 paste it to me"; }).catch(() => {}); break;
+    case "relay-clear": store.del("news:relay"); delete health.custom; saveHealth(); openConn(); break;
+    case "more-toggle": $("nav-topics").dataset.more = $("nav-topics").dataset.more==="1" ? "0" : "1"; renderNav(); break;
+    case "retry": getNews({ retryFailed:true }); break;
+    case "retry-all": getNews({ force:true }); break;
+    case "showmore": view.limit += 40; renderContent(); break;
+    case "dsave": {
+      const c = byId(+ds.id); if(!c) break; let s = store.get("news:saved")||[];
+      const i = s.findIndex(x => x.link===c.lead.link);
+      if(i>=0) s.splice(i,1); else s.unshift({ title:c.lead.title, link:c.lead.link, source:c.lead.source, ts:c.first, date:view.date });
+      store.set("news:saved", s.slice(0,200)); b.setAttribute("aria-pressed", String(i<0)); b.innerHTML = icon("i-bm")+" "+(i<0 ? "Saved" : "Save"); renderNav(); break;
+    }
+    case "dshare": {
+      const c = byId(+ds.id); if(!c) break;
+      const text = c.lead.title+" ("+c.lead.source+")";
+      (navigator.share ? navigator.share({ title:c.lead.title, text, url:c.lead.link }) : navigator.clipboard.writeText(text+"\n"+c.lead.link).then(() => announce("Link copied")))
+        .catch(() => {});
+      break;
+    }
+  }
+});
+$("layer").addEventListener("input", e => { if(e.target.id==="cmdq") searchResults(e.target.value); });
+function addWatch(t){ t = String(t).trim().slice(0,40); if(!t) return; const w = store.get("news:watch")||[]; if(!w.some(x => x.toLowerCase()===t.toLowerCase())) w.push(t); store.set("news:watch", w.slice(0,12)); renderContent(); }
+document.addEventListener("submit", e => { if(e.target.id==="wl-form"){ e.preventDefault(); addWatch($("wl-in").value); const i = $("wl-in"); if(i) i.focus(); } });
+document.addEventListener("change", e => { if(e.target.id==="srcf"){ view.src = e.target.value; view.limit = 40; renderContent(); const s = $("srcf"); if(s) s.focus(); } });
+document.addEventListener("keydown", e => {
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if(e.key==="/" && !typing && !$("cmdwrap")){ e.preventDefault(); openSearch(); return; }
+  if(e.key==="Escape"){ if($("cmdwrap")) closeSearch(); else if(document.querySelector(".drawer")) closeDetail(); else if(!$("pop").hidden) closePop(); else closeNav(); return; }
+  if($("cmdwrap") && ["ArrowDown","ArrowUp","Enter"].includes(e.key)){
+    const opts = [...document.querySelectorAll("#cmdres [role=option]")]; if(!opts.length) return;
+    if(e.key==="Enter"){ e.preventDefault(); opts[cmdSel].click(); return; }
+    e.preventDefault(); cmdSel = (cmdSel + (e.key==="ArrowDown" ? 1 : -1) + opts.length) % opts.length;
+    opts.forEach((o, i) => o.classList.toggle("on", i===cmdSel)); opts[cmdSel].scrollIntoView({block:"nearest"});
+  }
+});
+// Today only: refresh quietly every 10 minutes while visible.
+setInterval(() => { if(document.visibilityState==="visible" && isToday() && !view.loading && !view.refreshing && !view.pending && view.at && Date.now()-view.at > 10*60e3) getNews({ force:true }); }, 60e3);
+window.addEventListener("online", () => { if(view.date && (view.empty || view.offline)) getNews({ force:true }); });
+window.addEventListener("offline", () => { if(view.items.length){ view.offline = true; renderHeader(); } });
+
+// Back/forward and edited addresses move between days too.
+window.addEventListener("hashchange", () => {
+  const h = Object.fromEntries(location.hash.slice(1).split("&").filter(Boolean).map(x => x.split("=")));
+  if(h.d && /^\d{4}-\d{2}-\d{2}$/.test(h.d)){ const d = h.d > todayIST() ? todayIST() : h.d; if(d!==view.date) getNews({ date:d }); }
+});
+// Restore from the address (#d=YYYY-MM-DD&p=page&c=cat) so refresh keeps your place.
+(async function init(){
+  perf.mark("shell");
+  const h = Object.fromEntries(location.hash.slice(1).split("&").filter(Boolean).map(x => x.split("=")));
+  if(h.p && ["home","topics","cat","timeline","archive","saved"].includes(h.p)) view.page = h.p;
+  if(h.c && CAT_BY_ID[h.c]) view.cat = h.c;
+  await packs.init();
+  perf.mark("cacheReady");
+  render();
+  const start = h.d && /^\d{4}-\d{2}-\d{2}$/.test(h.d) ? (h.d > todayIST() ? todayIST() : h.d) : todayIST();
+  await getNews({ date: start });
+  perf.mark("firstLoad");
+})();
+
+</script>
+</body>
+</html>
